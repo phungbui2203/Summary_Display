@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="vi" class="auth-pending">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quy trình Trưng bày TT | ThaiCorp Display Process</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="allocation-data.js"></script>
+  <style>
+    html.auth-pending body { visibility: hidden; }
+  </style>
+</head>
+<body>
+  <div id="open-hint" class="alert alert-warning" style="display:none;margin:0;border-radius:0;text-align:center;font-size:13px"></div>
+  <header class="page-header">
+    <div class="header-row">
+      <div class="header-brand">
+        <img src="assets/thaicorp-logo.png" alt="ThaiCorp" class="brand-logo">
+        <div class="header-text">
+          <h1 data-i18n="pageTitle">Quy trình Trưng bày — Kênh TT</h1>
+          <p class="subtitle" data-i18n="pageSubtitle">Tổng quan · Tra cứu nhanh · Form mẫu &amp; hướng dẫn chương trình</p>
+        </div>
+      </div>
+      <div class="lang-switch" role="group" aria-label="Language">
+        <button type="button" class="lang-btn is-active" data-lang="vi">VI</button>
+        <button type="button" class="lang-btn" data-lang="en">EN</button>
+      </div>
+    </div>
+    <nav class="nav-tabs" aria-label="Sections">
+      <button type="button" class="nav-tab is-active" data-section="overview" data-i18n="navOverview">Tổng quan</button>
+      <button type="button" class="nav-tab" data-section="timeline" data-i18n="navTimeline">9 bước quy trình</button>
+      <button type="button" class="nav-tab" data-section="lookup" data-i18n="navLookup">Tra cứu nhanh</button>
+      <button type="button" class="nav-tab" data-section="programs" data-i18n="navPrograms">Chương trình theo ngành</button>
+      <button type="button" class="nav-tab" data-section="posm" data-i18n="navPosm">Kế hoạch Snack (NPP &amp; POSM)</button>
+      <button type="button" class="nav-tab" data-section="foc" data-i18n="navFoc">FOC &amp; viếng thăm</button>
+      <button type="button" class="nav-tab" data-section="forms" data-i18n="navForms">Form mẫu</button>
+    </nav>
+  </header>
+
+  <main class="layout">
+    <!-- Overview -->
+    <section id="overview" class="section panel-section">
+      <h2 data-i18n="overviewTitle">Bạn đang ở đâu trong hành trình trưng bày?</h2>
+      <div class="grid-2">
+        <div class="card">
+          <h3 data-i18n="cardTrainTitle">Onboarding</h3>
+          <p data-i18n="cardTrainBody">Bắt đầu từ mục <strong>9 bước quy trình</strong>.</p>
+        </div>
+        <div class="card">
+          <h3 data-i18n="cardLookupTitle">Tra cứu nhanh</h3>
+          <p data-i18n="cardLookupBody">Chọn mục đích → ngành hàng → vùng → loại POSM để xem đúng quy định và mức thưởng.</p>
+        </div>
+        <div class="card">
+          <h3 data-i18n="cardFormsTitle">Form mẫu</h3>
+          <p data-i18n="cardFormsBody">Tải file mẫu trong thư mục form mẫu với các form mẫu cần dùng trong trưng bày.</p>
+        </div>
+        <div class="card">
+          <h3 data-i18n="cardFocTitle">FOC &amp; quyền lợi</h3>
+          <p data-i18n="cardFocBody">Các ý chính bắt buộc phải tuân thủ tránh mất quyền lợi.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Timeline -->
+    <section id="timeline" class="section panel-section" hidden>
+      <h2 data-i18n="timelineTitle">Quy trình 9 bước — Kênh TT</h2>
+      <div class="timeline" id="timeline-steps"></div>
+      <div class="card" style="margin-top:20px">
+        <h3 data-i18n="rulesTitle">Quy định vận hành (áp dụng chung)</h3>
+        <ul id="rules-list"></ul>
+      </div>
+    </section>
+
+    <!-- Lookup -->
+    <section id="lookup" class="section panel-section" hidden>
+      <h2 data-i18n="lookupTitle">Tra cứu nhanh</h2>
+      <p class="section-lead" data-i18n="lookupLead">Chọn các tuỳ chọn bên dưới — hệ thống sẽ gợi ý nội dung liên quan và cuộn tới mục chi tiết nếu cần.</p>
+      <div class="card">
+        <div class="lookup-grid">
+          <label>
+            <span data-i18n="lkGoal">Mục đích</span>
+            <select id="lk-goal">
+              <option value="process" data-i18n-opt="lkGoalProcess">Quy trình / PIC / deadline</option>
+              <option value="reward" data-i18n-opt="lkGoalReward">Mức thưởng &amp; tiêu chuẩn trưng bày</option>
+              <option value="posm" data-i18n-opt="lkGoalPosm">Phân bổ POSM (Snack)</option>
+              <option value="foc" data-i18n-opt="lkGoalFoc">FOC &amp; điều kiện thanh toán</option>
+              <option value="forms" data-i18n-opt="lkGoalForms">Form mẫu cần dùng</option>
+            </select>
+          </label>
+          <label>
+            <span data-i18n="lkLine">Ngành hàng</span>
+            <select id="lk-line">
+              <option value="all" data-i18n-opt="lkLineAll">Chung (TT)</option>
+              <option value="snack" data-i18n-opt="lkLineSnack">Snack (Mix &amp; BiteeZ)</option>
+              <option value="mien" data-i18n-opt="lkLineMien">Miến</option>
+            </select>
+          </label>
+          <label>
+            <span data-i18n="lkRegion">Vùng / chính sách thưởng</span>
+            <select id="lk-region">
+              <option value="national" data-i18n-opt="lkRegNational">Toàn quốc (deck chuẩn)</option>
+              <option value="mekong" data-i18n-opt="lkRegMekong">ĐBSCL (Mekong Delta)</option>
+              <option value="north" data-i18n-opt="lkRegNorth">Miền Bắc (phân bổ POSM)</option>
+              <option value="south" data-i18n-opt="lkRegSouth">Miền Nam (phân bổ POSM)</option>
+            </select>
+          </label>
+          <label>
+            <span data-i18n="lkBrand">Brand (Snack)</span>
+            <select id="lk-brand">
+              <option value="na" data-i18n-opt="lkBrandNa">—</option>
+              <option value="mix" data-i18n-opt="lkBrandMix">Mix</option>
+              <option value="biteez" data-i18n-opt="lkBrandBz">BiteeZ</option>
+              <option value="both" data-i18n-opt="lkBrandBoth">Mix + BiteeZ</option>
+            </select>
+          </label>
+          <label>
+            <span data-i18n="lkPosm">Loại POSM</span>
+            <select id="lk-posm">
+              <option value="na" data-i18n-opt="lkPosmNa">—</option>
+              <option value="frame" data-i18n-opt="lkPosmFrame">Frame</option>
+              <option value="standee" data-i18n-opt="lkPosmStandee">Standee</option>
+              <option value="hanger" data-i18n-opt="lkPosmHanger">Hanger</option>
+            </select>
+          </label>
+        </div>
+        <div class="lookup-result card" id="lookup-result" style="background:#f8fbfd"></div>
+        <p style="margin:12px 0 0;font-size:12px;color:var(--c-muted)" data-i18n="lookupHint">Gợi ý: sau khi đọc kết quả, dùng thanh menu phía trên để mở mục chi tiết tương ứng.</p>
+      </div>
+    </section>
+
+    <!-- Programs -->
+    <section id="programs" class="section panel-section" hidden>
+      <h2 data-i18n="progTitle">Chương trình theo ngành hàng</h2>
+
+      <h3 class="prog-part-heading" data-i18n="progPart1">Phần 1: Tiêu chuẩn trưng bày kèm hình ảnh</h3>
+
+      <div class="card" id="prog-snack-std">
+        <span class="pill pill-mix">Snack</span>
+        <h3 data-i18n="snackTitle">Mix &amp; BiteeZ (Khung / kệ / Móc treo)</h3>
+        <div class="alert alert-warning" data-i18n="snackFrameRule">Không trưng BiteeZ bên trong frame Mix khi chưa có frame BiteeZ → bày ngoài frame (cạnh/dưới); 2 layer BiteeZ theo deck hướng dẫn.</div>
+        <div data-i18n-html="snackStdBody"></div>
+        <div class="standard-figure-grid">
+          <figure class="standard-figure standard-figure--posm">
+            <img src="assets/standards/snack-frame.jpg" alt="" decoding="async" fetchpriority="high">
+            <figcaption data-i18n="snackImg1">Frame</figcaption>
+          </figure>
+          <figure class="standard-figure standard-figure--posm">
+            <img src="assets/standards/snack-standee.jpg" alt="" decoding="async" fetchpriority="high">
+            <figcaption data-i18n="snackImg2">Standee</figcaption>
+          </figure>
+          <figure class="standard-figure standard-figure--posm">
+            <img src="assets/standards/snack-hanger.jpg" alt="" decoding="async" fetchpriority="high">
+            <figcaption data-i18n="snackImg3">Hanger</figcaption>
+          </figure>
+        </div>
+
+        <h4 style="margin:20px 0 12px;font-size:15px;color:var(--c-royal)" data-i18n="snackGuideTitle">Hướng dẫn trưng bày (so sánh đúng / sai)</h4>
+        <div class="standard-figure-grid standard-figure-grid--guide">
+          <figure class="standard-figure standard-figure--guide">
+            <img src="assets/standards/snack-guide-standee-hanger.jpg" alt="" decoding="async">
+            <figcaption data-i18n="snackGuide1">Standee &amp; Hanger: không trưng sản phẩm khác / sai brand — phải theo tiêu chuẩn Mix, BiteeZ &amp; Parteez</figcaption>
+          </figure>
+          <figure class="standard-figure standard-figure--guide">
+            <img src="assets/standards/snack-guide-frame-biteez.jpg" alt="" decoding="async">
+            <figcaption data-i18n="snackGuide2">Frame: không bày BiteeZ trong frame Mix — bày ngoài frame (cạnh/dưới) khi chưa có frame BiteeZ</figcaption>
+          </figure>
+        </div>
+      </div>
+
+      <div class="card" id="prog-mien-std">
+        <span class="pill pill-mien">Miến</span>
+        <h3 data-i18n="mienTitle">Song Long &amp; Song Lân (Khung &amp; Kệ)</h3>
+        <div class="grid-2">
+          <div>
+            <h4 data-i18n="mienKhung">Khung (T1–T12/2026)</h4>
+            <ul data-i18n-html="mienKhungStdList"></ul>
+          </div>
+          <div>
+            <h4 data-i18n="mienKe">Kệ (2 cách bày)</h4>
+            <ul data-i18n-html="mienKeStdList"></ul>
+          </div>
+        </div>
+        <div class="standard-figure-grid">
+          <figure class="standard-figure standard-figure--posm">
+            <img src="assets/standards/mien-frame.jpg" alt="" decoding="async">
+            <figcaption data-i18n="mienImg1">Frame</figcaption>
+          </figure>
+          <figure class="standard-figure standard-figure--posm">
+            <img src="assets/standards/mien-standee.jpg" alt="" decoding="async">
+            <figcaption data-i18n="mienImg2">Standee</figcaption>
+          </figure>
+        </div>
+      </div>
+
+      <h3 class="prog-part-heading" data-i18n="progPart2">Phần 2: Trả thưởng trưng bày</h3>
+
+      <div class="card">
+        <p class="form-desc" style="margin-top:0" data-i18n="rewardRegionLead">Chọn vùng để xem mức trả thưởng Snack (Mix &amp; BiteeZ). Miến áp dụng theo chương trình (xem bên dưới).</p>
+        <div class="region-tabs" role="tablist" aria-label="Reward region">
+          <button type="button" class="region-tab is-active" data-region="south" data-i18n="regionSouth">South</button>
+          <button type="button" class="region-tab" data-region="north" data-i18n="regionNorth">North</button>
+          <button type="button" class="region-tab" data-region="mekong" data-i18n="regionMekong">Mekong</button>
+        </div>
+
+        <div class="reward-region-panel" id="reward-panel-south" data-region="south">
+          <h4 data-i18n="rewardSnackSouth">Snack (Frame)</h4>
+          <div id="reward-south-snack"></div>
+        </div>
+        <div class="reward-region-panel" id="reward-panel-north" data-region="north" hidden>
+          <h4 data-i18n="rewardSnackNorth">Snack (Frame)</h4>
+          <div id="reward-north-snack"></div>
+        </div>
+        <div class="reward-region-panel" id="reward-panel-mekong" data-region="mekong" hidden>
+          <h4 data-i18n="rewardSnackMekong">Snack (Frame)</h4>
+          <div id="reward-mekong-snack"></div>
+        </div>
+
+        <hr style="border:none;border-top:1px solid var(--c-mist);margin:20px 0">
+
+        <h4 data-i18n="rewardMienTitle">Miến</h4>
+        <ul data-i18n-html="mienRewardList"></ul>
+      </div>
+    </section>
+
+    <!-- POSM allocation -->
+    <section id="posm" class="section panel-section" hidden>
+      <h2 data-i18n="posmTitle">Kế hoạch trưng bày Snack theo NPP</h2>
+      <div class="card posm-legend">
+        <h3 data-i18n="posmLegendTitle">Cách đọc bảng</h3>
+        <ul class="posm-legend-list" data-i18n-html="posmLegendBody"></ul>
+      </div>
+      <div class="card posm-filters">
+        <div class="posm-filter-grid">
+          <label>
+            <span data-i18n="posmFilterHq">Miền</span>
+            <select id="posm-hq-filter">
+              <option value="all" data-i18n-opt="posmHqAll">Tất cả</option>
+              <option value="south" data-i18n-opt="posmHqSouth">Miền Nam</option>
+              <option value="north" data-i18n-opt="posmHqNorth">Miền Bắc</option>
+            </select>
+          </label>
+          <label>
+            <span data-i18n="posmFilterArea">Khu vực (Area)</span>
+            <select id="posm-area-filter">
+              <option value="all" data-i18n-opt="posmAreaAll">Tất cả</option>
+            </select>
+          </label>
+          <label>
+            <span data-i18n="posmFilterSearch">Tìm NPP</span>
+            <input type="search" id="posm-search" placeholder="Mã / tên NPP" data-i18n-placeholder="posmSearchPh">
+          </label>
+          <label class="posm-filter-check">
+            <input type="checkbox" id="posm-show-totals" checked>
+            <span data-i18n="posmShowTotals">Hiện dòng tổng Area / Miền / Toàn quốc</span>
+          </label>
+        </div>
+      </div>
+      <div class="card">
+        <h3 data-i18n="posmTableTitle">Chi tiết theo NPP</h3>
+        <p class="form-desc" id="posm-row-count" aria-live="polite"></p>
+        <div class="data-table-wrap data-table-wrap--posm">
+          <table class="data-table data-table--posm" id="posm-table">
+            <thead>
+              <tr>
+                <th rowspan="2" data-i18n="posmColHq">Miền</th>
+                <th rowspan="2" data-i18n="posmColArea">Area</th>
+                <th rowspan="2" data-i18n="posmColCode">Mã NPP</th>
+                <th rowspan="2" data-i18n="posmColName">NPP</th>
+                <th colspan="2" class="th-group th-group--mix" data-i18n="posmGrpPlanMix">Kế hoạch CH — Mix (Allocation Plan)</th>
+                <th colspan="3" class="th-group th-group--mix" data-i18n="posmGrpAllocMix">POSM gửi NPP — Mix (ALLOCATE POSM)</th>
+                <th colspan="2" class="th-group th-group--bz" data-i18n="posmGrpPlanBz">Kế hoạch CH — BiteeZ (Allocation Plan)</th>
+                <th colspan="3" class="th-group th-group--bz" data-i18n="posmGrpAllocBz">POSM gửi NPP — BiteeZ (ALLOCATE POSM)</th>
+              </tr>
+              <tr>
+                <th class="th-group--mix" data-i18n="posmColFrame">Frame</th>
+                <th class="th-group--mix" data-i18n="posmColStandee">Standee</th>
+                <th class="th-group--mix" data-i18n="posmColFrame">Frame</th>
+                <th class="th-group--mix" data-i18n="posmColStandee">Standee</th>
+                <th class="th-group--mix" data-i18n="posmColHanger">Hanger</th>
+                <th class="th-group--bz" data-i18n="posmColFrame">Frame</th>
+                <th class="th-group--bz" data-i18n="posmColStandee">Standee</th>
+                <th class="th-group--bz" data-i18n="posmColFrame">Frame</th>
+                <th class="th-group--bz" data-i18n="posmColStandee">Standee</th>
+                <th class="th-group--bz" data-i18n="posmColHanger">Hanger</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      <a class="btn btn-ghost" href="Snack%20Display%20(Allocation%20Plan).xlsx" download data-i18n="posmDownload">Tải file Excel đầy đủ</a>
+    </section>
+
+    <!-- FOC -->
+    <section id="foc" class="section panel-section" hidden>
+      <h2 data-i18n="focTitle">FOC trưng bày &amp; tần suất viếng thăm</h2>
+      <p class="section-lead" data-i18n="focLead">Nội dung bắt buộc cho sales team — tránh vi phạm ảnh hưởng quyền lợi và thanh toán phí trưng bày.</p>
+      <div class="alert alert-danger">
+        <strong data-i18n="focMustTitle">Khi trả hàng FOC trưng bày, bắt buộc:</strong>
+        <ul id="foc-must-list"></ul>
+      </div>
+      <div class="alert alert-warning" data-i18n="focBlock">Cửa hàng không có đầy đủ biên bản xác nhận và hình ảnh trả hàng FOC của kỳ trước sẽ <strong>không đủ điều kiện</strong> thanh toán phí trưng bày tháng kế tiếp.</div>
+      <div class="card">
+        <h3 data-i18n="focVisitTitle">Tần suất viếng thăm</h3>
+        <p data-i18n="focVisitBody">Viếng thăm, trưng bày và chụp hình tại cửa hàng <strong>tối thiểu 2 lần/tháng</strong> theo quy định (đồng bộ với yêu cầu 2 ảnh/tháng trong quy trình TT).</p>
+      </div>
+      <div class="card">
+        <h3 data-i18n="focNoticeTitle">Thông báo trưng bày (bản scan)</h3>
+        <img src="assets/thong-bao-trung-bay-p1.jpg" alt="Thông báo trưng bày" class="notice-img" width="900" decoding="async">
+        <p style="font-size:12px;color:var(--c-muted);margin-top:8px">
+          <a href="th%C3%B4ng%20b%C3%A1o%20tr%C6%B0ng%20b%C3%A0y.pdf" target="_blank" rel="noopener" data-i18n="focPdfLink">Mở file PDF gốc</a>
+        </p>
+      </div>
+    </section>
+
+    <!-- Forms -->
+    <section id="forms" class="section panel-section" hidden>
+      <h2 data-i18n="formsTitle">Form mẫu — tải &amp; điền offline</h2>
+      <p class="section-lead" data-i18n="formsLead">Tải bản mẫu, điền trên máy/in ấn. Không hỗ trợ điền trực tuyến trên trang này.</p>
+      <ul class="form-list" id="form-downloads"></ul>
+      <div class="card" style="margin-top:20px">
+        <h3 data-i18n="refDocsTitle">Tài liệu tham khảo (deck / guideline)</h3>
+        <ul id="ref-docs-list"></ul>
+      </div>
+    </section>
+  </main>
+
+  <script>
+(async function () {
+  /* Cùng cơ chế auth với báo cáo Wet Market: session Supabase → nếu chưa login thì về trang chủ portal */
+  const PORTAL_HOME = "https://nguyen842-ai.github.io/Tong-hop-bao-cao/";
+  const SUPABASE_URL = "https://mrqldgycwovpbmzdeuyz.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_itZfZBVw7bxE184tGh7x8A_0_r-QB5p";
+
+  try {
+    if (!window.supabase) throw new Error("Supabase SDK missing");
+    const supabaseApp = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const { data: { session } } = await supabaseApp.auth.getSession();
+    if (!session) {
+      alert("Truy cập bị từ chối! Vui lòng đăng nhập hệ thống.");
+      window.location.href = PORTAL_HOME;
+      return;
+    }
+  } catch (authErr) {
+    console.error(authErr);
+    alert("Truy cập bị từ chối! Vui lòng đăng nhập hệ thống.");
+    window.location.href = PORTAL_HOME;
+    return;
+  }
+  document.documentElement.classList.remove("auth-pending");
+
+  const I18N = {
+    vi: {
+      pageTitle: "Quy trình Trưng bày — Kênh TT",
+      pageSubtitle: "Tổng quan · Tra cứu nhanh · Form mẫu & hướng dẫn chương trình",
+      navOverview: "Tổng quan", navTimeline: "9 bước quy trình", navLookup: "Tra cứu nhanh",
+      navPrograms: "Chương trình theo ngành", navPosm: "Kế hoạch Snack (NPP & POSM)", navFoc: "FOC & viếng thăm", navForms: "Form mẫu",
+      overviewTitle: "Bạn đang ở đâu trong hành trình trưng bày?",
+      cardTrainTitle: "Onboarding", cardTrainBody: "Bắt đầu từ mục <strong>9 bước quy trình</strong>.",
+      cardLookupTitle: "Tra cứu nhanh", cardLookupBody: "Chọn mục đích → ngành hàng → vùng → loại POSM để xem đúng quy định và mức thưởng.",
+      cardFormsTitle: "Form mẫu", cardFormsBody: "Tải file mẫu trong thư mục form mẫu với các form mẫu cần dùng trong trưng bày.",
+      cardFocTitle: "FOC & quyền lợi", cardFocBody: "Các ý chính bắt buộc phải tuân thủ tránh mất quyền lợi.",
+      timelineTitle: "Quy trình 9 bước — Kênh TT",
+      rulesTitle: "Quy định vận hành (áp dụng chung)",
+      lookupTitle: "Tra cứu nhanh", lookupLead: "Chọn các tuỳ chọn bên dưới — hệ thống sẽ gợi ý nội dung liên quan.",
+      lkGoal: "Mục đích", lkLine: "Ngành hàng", lkRegion: "Vùng / chính sách thưởng", lkBrand: "Brand (Snack)", lkPosm: "Loại POSM",
+      lkGoalProcess: "Quy trình / PIC / deadline", lkGoalReward: "Mức thưởng & tiêu chuẩn", lkGoalPosm: "Kế hoạch Snack (NPP & POSM)",
+      lkGoalFoc: "FOC & điều kiện thanh toán", lkGoalForms: "Form mẫu cần dùng",
+      lkLineAll: "Chung (TT)", lkLineSnack: "Snack (Mix & BiteeZ)", lkLineMien: "Miến",
+      lkRegNational: "Toàn quốc (deck chuẩn)", lkRegMekong: "ĐBSCL (Mekong Delta)", lkRegNorth: "Miền Bắc (phân bổ POSM)", lkRegSouth: "Miền Nam (phân bổ POSM)",
+      lkBrandNa: "—", lkBrandMix: "Mix", lkBrandBz: "BiteeZ", lkBrandBoth: "Mix + BiteeZ",
+      lkPosmNa: "—", lkPosmFrame: "Frame", lkPosmStandee: "Standee", lkPosmHanger: "Hanger",
+      lookupHint: "Gợi ý: sau khi đọc kết quả, dùng thanh menu phía trên để mở mục chi tiết.",
+      progTitle: "Chương trình theo ngành hàng",
+      progPart1: "Phần 1: Tiêu chuẩn trưng bày kèm hình ảnh",
+      progPart2: "Phần 2: Trả thưởng trưng bày",
+      snackTitle: "Mix & BiteeZ (Khung / kệ / Móc treo)",
+      snackFrameRule: "Không trưng BiteeZ bên trong frame Mix khi chưa có frame BiteeZ → bày ngoài frame (cạnh/dưới); 2 layer BiteeZ theo deck hướng dẫn.",
+      snackStdBody: "<ul><li><strong>Frame Mix</strong>: tối thiểu 2 mâm, chiều dài 1m.</li><li><strong>Frame BiteeZ</strong>: tối thiểu 2 mâm, chiều dài 1m (bày riêng, không trong frame Mix).</li><li><strong>Standee</strong>: BiteeZ 18g &amp; Parteez; Mix 50g (ớt cay, rong biển, gà cay HQ) · kích thước 0,6m × 1,4m.</li><li><strong>Hanger</strong>: Mix 50g/20g hoặc BiteeZ 18g — trước cửa shop, cùng shop với Mix &amp; BiteeZ.</li></ul>",
+      snackImg1: "Frame",
+      snackImg2: "Standee",
+      snackImg3: "Hanger",
+      snackGuideTitle: "Hướng dẫn trưng bày (so sánh đúng / sai)",
+      snackGuide1: "Standee & Hanger: không trưng sản phẩm khác / sai brand — phải theo tiêu chuẩn Mix, BiteeZ & Parteez",
+      snackGuide2: "Frame: không bày BiteeZ trong frame Mix — bày ngoài frame (cạnh/dưới) khi chưa có frame BiteeZ",
+      rewardRegionLead: "Chọn vùng để xem mức trả thưởng Snack (Mix & BiteeZ). Miến áp dụng theo chương trình (xem bên dưới).",
+      regionSouth: "South", regionNorth: "North", regionMekong: "Mekong",
+      rewardSnackSouth: "Snack (Frame)", rewardSnackNorth: "Snack (Frame)", rewardSnackMekong: "Snack (Frame)",
+      rewardMienTitle: "Miến",
+      mienTitle: "Song Long & Song Lân (Khung & Kệ)", mienKhung: "Khung (T1–T12/2026)", mienKe: "Kệ (2 cách bày)",
+      mienKhungStdList: "<li>SKU: Miến đậu xanh 200g, Miến dong 200g</li><li>Quy cách: dong 8 mặt×3 lớp; đậu xanh 10 mặt×3 lớp</li><li>Tiêu chuẩn: ≥1 mâm, ≥1 SKU, tối thiểu 8 mặt</li><li>Khung 1m × 0,8m</li>",
+      mienKeStdList: "<li><strong>Cách 1</strong>: 1 SKU miến khô + 1 SKU miến tươi (khô ≥4 mặt, tươi ≥2 mặt)</li><li><strong>Cách 2</strong>: 3 mâm, mỗi mâm ≥5 mặt</li><li>Kệ: 1,3m (cao) × 0,5m (rộng) × 0,25m (sâu)</li>",
+      mienRewardList: "<li><strong>Khung</strong>: 10 gói Miến đậu xanh 200g / CH / tháng</li><li><strong>Kệ</strong>: 20 gói Miến đậu xanh 200g / CH / tháng</li><li>CTKM theo tháng (có thể thay đổi)</li>",
+      mienImg1: "Frame — kích thước 1m × 0,8m",
+      mienImg2: "Standee — Cách 1 & Cách 2 (1,3m × 0,5m × 0,25m)",
+      posmTitle: "Kế hoạch trưng bày Snack theo NPP",
+      posmLegendTitle: "Cách đọc bảng",
+      posmLegendBody: "<li><strong>Allocation Plan</strong> (Kế hoạch cửa hàng): số <em>cửa hàng</em> được phép đăng ký trưng bày theo loại POSM (Frame / Standee).</li><li><strong>ALLOCATE POSM</strong>: số lượng <em>POSM tối đa</em> được gửi về NPP (Frame / Standee / Hanger) — không phải số cửa hàng.</li><li>Mix và BiteeZ tách riêng hai khối cột như trên Excel.</li>",
+      posmFilterHq: "Miền", posmHqAll: "Tất cả", posmHqSouth: "Miền Nam", posmHqNorth: "Miền Bắc",
+      posmFilterArea: "Khu vực (Area)", posmAreaAll: "Tất cả",
+      posmFilterSearch: "Tìm NPP", posmSearchPh: "Mã hoặc tên NPP",
+      posmShowTotals: "Hiện dòng tổng Area / Miền / Toàn quốc",
+      posmTableTitle: "Chi tiết theo NPP", posmColHq: "Miền", posmColArea: "Area", posmColCode: "Mã NPP", posmColName: "NPP",
+      posmColFrame: "Frame", posmColStandee: "Standee", posmColHanger: "Hanger",
+      posmGrpPlanMix: "Kế hoạch CH — Mix (Allocation Plan)", posmGrpPlanBz: "Kế hoạch CH — BiteeZ (Allocation Plan)",
+      posmGrpAllocMix: "POSM gửi NPP — Mix (ALLOCATE POSM)", posmGrpAllocBz: "POSM gửi NPP — BiteeZ (ALLOCATE POSM)",
+      posmRowCount: "{n} NPP · {t} dòng hiển thị",
+      posmDownload: "Tải file Excel đầy đủ",
+      focTitle: "FOC trưng bày & tần suất viếng thăm", focLead: "Bắt buộc cho sales team — tránh ảnh hưởng quyền lợi.",
+      focMustTitle: "Khi trả hàng FOC trưng bày, bắt buộc:",
+      focBlock: "Thiếu biên bản & ảnh FOC kỳ trước → không đủ điều kiện thanh toán phí trưng bày tháng kế tiếp.",
+      focVisitTitle: "Tần suất viếng thăm", focVisitBody: "Viếng thăm, trưng bày và chụp hình tối thiểu 2 lần/tháng theo quy định.",
+      focNoticeTitle: "Thông báo trưng bày (bản scan)", focPdfLink: "Mở file PDF gốc",
+      formsTitle: "Form mẫu — tải & điền offline", formsLead: "Tải bản mẫu, điền offline.", refDocsTitle: "Tài liệu tham khảo (deck / guideline)",
+      focMust: [
+        "Có Biên bản xác nhận nhận hàng với đầy đủ chữ ký khách hàng.",
+        "Chụp hình ảnh khách hàng nhận hàng FOC thực tế.",
+        "Gửi hình ảnh xác nhận vào nhóm trưng bày ngay sau khi hoàn tất."
+      ],
+      steps: [
+        { title: "Đề xuất CH trưng bày & vị trí", pic: "CDM / KAM", body: "Gửi thông tin CH theo mẫu cho MKT, RTM, Sales Effectiveness khi đề xuất và phê duyệt." },
+        { title: "Phê duyệt cửa hàng trưng bày", pic: "Sales Director", body: "" },
+        { title: "Cập nhật danh sách CH trưng bày", pic: "RTM — mỗi thứ Sáu", body: "Gồm danh sách đăng ký và tồn POSM tại NPP." },
+        { title: "Chuẩn bị & giao POSM về NPP", pic: "MKT, CS, Logistics", body: "" },
+        { title: "Ký Biên bản thỏa thuận trưng bày", pic: "CDM/KAM & Khách hàng", body: "" },
+        { title: "Báo cáo trưng bày hàng tháng", pic: "Sales Effectiveness", body: "Cập nhật báo cáo ngày 06 hàng tháng để xử lý trả thưởng." },
+        { title: "Phê duyệt trả phí trưng bày", pic: "MKT / Route to Market", body: "Cần hình ảnh trưng bày 2 lần/tháng/CH." },
+        { title: "Trả phí trưng bày", pic: "Sales Effectiveness & Sales team", body: "Chỉ trả phí tháng khi có biên bản FOC tháng trước (ký KH + ảnh)." },
+        { title: "Theo dõi biên bản, FOC, hiệu quả", pic: "RTM", body: "" }
+      ],
+      rules: [
+        "Trưng bày sau ngày 20: không trả phí tháng đó — tính từ ngày 01 tháng sau.",
+        "Phê duyệt trả phí: mỗi CH cần hình ảnh trưng bày 2 lần/tháng.",
+        "Trả phí tháng hiện tại khi có biên bản FOC tháng trước (xác nhận từ KH + hình ảnh nhận FOC).",
+        "Triển khai: key POSM trên hệ thống DMS."
+      ]
+    },
+    en: {
+      pageTitle: "Display Process — TT Channel",
+      pageSubtitle: "Overview · Quick lookup · Forms & program guides",
+      navOverview: "Overview", navTimeline: "9-step process", navLookup: "Quick lookup",
+      navPrograms: "Programs by category", navPosm: "Snack plan (NPP & POSM)", navFoc: "FOC & visits", navForms: "Forms",
+      overviewTitle: "Where are you in the display journey?",
+      cardTrainTitle: "Onboarding", cardTrainBody: "Start with the <strong>9-step process</strong>.",
+      cardLookupTitle: "Quick lookup", cardLookupBody: "Pick purpose → line → region → POSM type for the right rules and rewards.",
+      cardFormsTitle: "Forms", cardFormsBody: "Download templates from the form mẫu folder — the forms needed for display.",
+      cardFocTitle: "FOC & eligibility", cardFocBody: "Mandatory points to follow so you do not lose benefits.",
+      timelineTitle: "9-step process — TT Channel",
+      rulesTitle: "Operating rules (shared)",
+      lookupTitle: "Quick lookup", lookupLead: "Select options below for tailored guidance.",
+      lkGoal: "Purpose", lkLine: "Product line", lkRegion: "Region / reward policy", lkBrand: "Brand (Snack)", lkPosm: "POSM type",
+      lkGoalProcess: "Process / PIC / deadlines", lkGoalReward: "Rewards & standards", lkGoalPosm: "Snack plan (NPP & POSM)",
+      lkGoalFoc: "FOC & payment eligibility", lkGoalForms: "Required forms",
+      lkLineAll: "General (TT)", lkLineSnack: "Snack (Mix & BiteeZ)", lkLineMien: "Noodles",
+      lkRegNational: "National (standard deck)", lkRegMekong: "Mekong Delta", lkRegNorth: "North (POSM totals)", lkRegSouth: "South (POSM totals)",
+      lkBrandNa: "—", lkBrandMix: "Mix", lkBrandBz: "BiteeZ", lkBrandBoth: "Mix + BiteeZ",
+      lkPosmNa: "—", lkPosmFrame: "Frame", lkPosmStandee: "Standee", lkPosmHanger: "Hanger",
+      lookupHint: "Tip: use the top menu to open the detailed section after reading results.",
+      progTitle: "Programs by product line",
+      progPart1: "Part 1: Display standards with images",
+      progPart2: "Part 2: Display rewards",
+      snackTitle: "Mix & BiteeZ — Frame / Standee / Hanger",
+      snackFrameRule: "Do not place BiteeZ inside Mix frame when there is no BiteeZ frame → display beside/below Mix frame per deck.",
+      snackStdBody: "<ul><li><strong>Mix Frame</strong>: min 2 trays, 1m length.</li><li><strong>BiteeZ Frame</strong>: min 2 trays, 1m, separate from Mix frame.</li><li><strong>Standee</strong>: listed SKUs · 0.6m × 1.4m.</li><li><strong>Hanger</strong>: Mix 50g/20g or BiteeZ 18g at shop front.</li></ul>",
+      snackImg1: "Frame",
+      snackImg2: "Standee",
+      snackImg3: "Hanger",
+      snackGuideTitle: "Display guidance (wrong vs correct)",
+      snackGuide1: "Standee & Hanger: do not use wrong brands/products — follow Mix, BiteeZ & Parteez standards",
+      snackGuide2: "Frame: no BiteeZ inside Mix frame — place beside/below when no dedicated BiteeZ frame",
+      rewardRegionLead: "Select a region for Snack (Mix & BiteeZ) rewards. Noodles rewards are listed below.",
+      regionSouth: "South", regionNorth: "North", regionMekong: "Mekong",
+      rewardSnackSouth: "Snack (Frame)", rewardSnackNorth: "Snack (Frame)", rewardSnackMekong: "Snack (Frame)",
+      rewardMienTitle: "Noodles",
+      mienTitle: "Song Long & Song Lân (Frame & shelf)", mienKhung: "Frame (Jan–Dec 2026)", mienKe: "Shelf (2 layouts)",
+      mienKhungStdList: "<li>SKUs: green bean & dong noodles 200g</li><li>Layout per spec (faces × layers)</li><li>Min: 1 tray, 1 SKU, 8 faces</li><li>Frame 1m × 0.8m</li>",
+      mienKeStdList: "<li><strong>Option 1</strong>: dry + fresh SKU (min faces per spec)</li><li><strong>Option 2</strong>: 3 trays, 5 faces each</li><li>Shelf: 1.3m H × 0.5m W × 0.25m D</li>",
+      mienRewardList: "<li><strong>Frame</strong>: 10 packs green bean 200g / store / month</li><li><strong>Shelf</strong>: 20 packs green bean 200g / store / month</li><li>Monthly promos may change</li>",
+      mienImg1: "Frame — 1m × 0.8m",
+      mienImg2: "Standee — layout 1 & 2 (1.3m H × 0.5m W × 0.25m D)",
+      posmTitle: "Snack display plan by NPP",
+      posmLegendTitle: "How to read the table",
+      posmLegendBody: "<li><strong>Allocation Plan</strong>: number of <em>stores</em> allowed to register for display (Frame / Standee).</li><li><strong>ALLOCATE POSM</strong>: maximum <em>POSM units</em> shipped to the NPP (Frame / Standee / Hanger) — not store count.</li><li>Mix and BiteeZ are separate column groups, matching Excel.</li>",
+      posmFilterHq: "Region", posmHqAll: "All", posmHqSouth: "South", posmHqNorth: "North",
+      posmFilterArea: "Area", posmAreaAll: "All",
+      posmFilterSearch: "Search NPP", posmSearchPh: "Code or name",
+      posmShowTotals: "Show Area / region / national subtotals",
+      posmTableTitle: "NPP detail", posmColHq: "HQ", posmColArea: "Area", posmColCode: "NPP code", posmColName: "Distributor",
+      posmColFrame: "Frame", posmColStandee: "Standee", posmColHanger: "Hanger",
+      posmGrpPlanMix: "Store plan — Mix (Allocation Plan)", posmGrpPlanBz: "Store plan — BiteeZ (Allocation Plan)",
+      posmGrpAllocMix: "POSM to NPP — Mix (ALLOCATE POSM)", posmGrpAllocBz: "POSM to NPP — BiteeZ (ALLOCATE POSM)",
+      posmRowCount: "{n} NPP · {t} rows shown",
+      posmDownload: "Download full Excel",
+      focTitle: "Display FOC & visit frequency", focLead: "Mandatory for sales — protects eligibility and display fees.",
+      focMustTitle: "When delivering display FOC, you must:",
+      focBlock: "Missing prior-period FOC form and photos → not eligible for next-month display fee payment.",
+      focVisitTitle: "Visit frequency", focVisitBody: "Visit, display check and photos at store at least twice per month.",
+      focNoticeTitle: "Display notice (scan)", focPdfLink: "Open original PDF",
+      formsTitle: "Forms — download & fill offline", formsLead: "Download templates only; no online forms.", refDocsTitle: "Reference decks / guidelines",
+      focMust: [
+        "Signed customer acknowledgment form for FOC receipt.",
+        "Photo of customer actually receiving FOC goods.",
+        "Post confirmation photos to the display group immediately after completion."
+      ],
+      steps: [
+        { title: "Propose display store & location", pic: "CDM / KAM", body: "Send customer info template to MKT, RTM, Sales Effectiveness." },
+        { title: "Approve display store", pic: "Sales Director", body: "" },
+        { title: "Update display customer list", pic: "RTM — every Friday", body: "Registered list + POSM stock at distributor." },
+        { title: "Prepare & deliver POSM to NPP", pic: "MKT, CS, Logistics", body: "" },
+        { title: "Sign display agreement", pic: "CDM/KAM & Customer", body: "" },
+        { title: "Monthly display report", pic: "Sales Effectiveness", body: "Submit by the 6th each month." },
+        { title: "Approve display fee", pic: "MKT / RTM", body: "2 display photos per store per month required." },
+        { title: "Pay display fee", pic: "Sales Effectiveness & Sales", body: "Prior month FOC acknowledgment required." },
+        { title: "Track agreement, FOC, effectiveness", pic: "RTM", body: "" }
+      ],
+      rules: [
+        "Display after the 20th: no fee for that month — counted from the 1st of next month.",
+        "Fee approval: 2 display photos per store per month.",
+        "Current month's display fee requires prior month's FOC acknowledgment (customer confirmation + FOC receipt photos).",
+        "Execution: key POSM in DMS."
+      ]
+    }
+  };
+
+  const REWARD_HTML = {
+    nationalSouth: {
+      vi: `<ul>
+        <li><strong>Mix Frame</strong> (từ 12/2025): ≥2 mâm Mix, chiều dài 1m · DS tối thiểu <strong>4 triệu/tháng</strong> · Thưởng <strong>2 thùng Mix 50g/tháng</strong>.</li>
+        <li><strong>BiteeZ Frame</strong>: ≥2 mâm BiteeZ, chiều dài 1m · Mức 1: DS tối thiểu <strong>3 triệu/tháng</strong> → <strong>1.5 thùng BiteeZ 4.5g</strong>; Mức 2: DS tối thiểu <strong>2 triệu/tháng</strong> → <strong>1 thùng</strong>.</li>
+        <li>Shop &gt;100 thùng/tháng: có thể thương lượng thưởng thêm với MKT.</li>
+        <li>Hết FOC theo SKU: công ty có thể chuyển SKU khác <strong>giá trị tương đương</strong>.</li>
+      </ul>`,
+      en: `<ul>
+        <li><strong>Mix Frame</strong> (from Dec 2025): ≥2 Mix trays, 1m length · Min sales <strong>VND 4M/month</strong> · <strong>2 cartons Mix 50g/month</strong>.</li>
+        <li><strong>BiteeZ Frame</strong>: ≥2 BiteeZ trays, 1m length · Tier 1: min <strong>3M/month</strong> → <strong>1.5 ctns BiteeZ 4.5g</strong>; Tier 2: min <strong>2M/month</strong> → <strong>1 ctn</strong>.</li>
+        <li>&gt;100 cartons/month: extra reward negotiable with MKT.</li>
+        <li>If FOC SKU exhausted: equivalent-value SKU substitution.</li>
+      </ul>`
+    },
+    nationalNorth: {
+      vi: `<ul>
+        <li><strong>Mix Frame</strong> (từ 12/2025): ≥2 mâm Mix, chiều dài 1m · DS tối thiểu <strong>5 triệu/tháng</strong> · Thưởng <strong>2 thùng Mix 50g/tháng</strong>.</li>
+        <li><strong>BiteeZ Frame</strong>: ≥2 mâm BiteeZ, chiều dài 1m · Mức 1: DS tối thiểu <strong>3 triệu/tháng</strong> → <strong>1.5 thùng BiteeZ 4.5g</strong>; Mức 2: DS tối thiểu <strong>2 triệu/tháng</strong> → <strong>1 thùng</strong>.</li>
+        <li>Shop &gt;100 thùng/tháng: có thể thương lượng thưởng thêm với MKT.</li>
+        <li>Hết FOC theo SKU: công ty có thể chuyển SKU khác <strong>giá trị tương đương</strong>.</li>
+      </ul>`,
+      en: `<ul>
+        <li><strong>Mix Frame</strong> (from Dec 2025): ≥2 Mix trays, 1m length · Min sales <strong>VND 5M/month</strong> · <strong>2 cartons Mix 50g/month</strong>.</li>
+        <li><strong>BiteeZ Frame</strong>: ≥2 BiteeZ trays, 1m length · Tier 1: min <strong>3M/month</strong> → <strong>1.5 ctns BiteeZ 4.5g</strong>; Tier 2: min <strong>2M/month</strong> → <strong>1 ctn</strong>.</li>
+        <li>&gt;100 cartons/month: extra reward negotiable with MKT.</li>
+        <li>If FOC SKU exhausted: equivalent-value SKU substitution.</li>
+      </ul>`
+    },
+    mekong: {
+      vi: `<ul>
+        <li><strong>Mix Frame</strong>: ≥2 mâm Mix, chiều dài 1m · Mức 1: DS tối thiểu <strong>4 triệu/tháng</strong> → <strong>2 thùng Mix 50g</strong>; Mức 2: DS tối thiểu <strong>3 triệu/tháng</strong> → <strong>1 thùng Mix 50g</strong>.</li>
+        <li><strong>BiteeZ Frame</strong>: ≥2 mâm BiteeZ, chiều dài 1m · Mức 1: DS tối thiểu <strong>3 triệu/tháng</strong> → <strong>1.5 thùng BiteeZ 4.5g</strong>; Mức 2: DS tối thiểu <strong>2 triệu/tháng</strong> → <strong>1 thùng</strong>.</li>
+        <li>Shop &gt;100 thùng/tháng: có thể thương lượng thưởng thêm với MKT.</li>
+        <li>Hết FOC theo SKU: công ty có thể chuyển SKU khác <strong>giá trị tương đương</strong>.</li>
+      </ul>`,
+      en: `<ul>
+        <li><strong>Mix Frame</strong>: ≥2 Mix trays, 1m length · Tier 1: min <strong>4M/month</strong> → <strong>2 Mix 50g</strong>; Tier 2: min <strong>3M/month</strong> → <strong>1 Mix 50g</strong>.</li>
+        <li><strong>BiteeZ Frame</strong>: ≥2 BiteeZ trays, 1m length · Tier 1: min <strong>3M/month</strong> → <strong>1.5 ctns BiteeZ 4.5g</strong>; Tier 2: min <strong>2M/month</strong> → <strong>1 ctn</strong>.</li>
+        <li>&gt;100 cartons/month: extra reward negotiable with MKT.</li>
+        <li>If FOC SKU exhausted: equivalent-value SKU substitution.</li>
+      </ul>`
+    },
+    standee: {
+      vi: `<ul>
+        <li><strong>Standee</strong> (từ 01/07/2026): BiteeZ 18g &amp; Parteez / Mix 50g (ớt cay, rong biển, gà cay HQ) · Kích thước 0.6×1.4m · DS tối thiểu <strong>1.5 triệu/tháng</strong> · Thưởng: 1 thùng BiteeZ 4.5g hoặc 1 thùng Mix 50g.</li>
+        <li><strong>Hanger</strong> (từ 12/2025): Mix 50g/20g hoặc BiteeZ 18g treo trước cửa shop · Thưởng: <strong>miễn phí</strong> POSM.</li>
+      </ul>`,
+      en: `<ul>
+        <li><strong>Standee</strong> (from Jul 2026): BiteeZ 18g &amp; Parteez / Mix 50g · Size 0.6×1.4m · Min sales <strong>1.5M/month</strong> · Reward: 1 ctn BiteeZ 4.5g or 1 ctn Mix 50g.</li>
+        <li><strong>Hanger</strong> (from Dec 2025): Mix 50g/20g or BiteeZ 18g hung in front of store · POSM <strong>free</strong>.</li>
+      </ul>`
+    }
+  };
+
+  const FORMS = [
+    { nameVi: "Biên bản đăng ký trưng bày", nameEn: "Display registration form", descVi: "Excel", descEn: "Excel", href: "forms/Danh%20S%C3%A1ch%20Kh%C3%A1ch%20H%C3%A0ng%20%C4%90%C4%83ng%20K%C3%BD%20Tr%C6%B0ng%20B%C3%A0y.xlsx", file: "Danh Sách Khách Hàng Đăng Ký Trưng Bày.xlsx" },
+    { nameVi: "Thông tin khách hàng (ảnh vị trí trưng bày)", nameEn: "Customer information (display location photos)", descVi: "PPT", descEn: "PPT", href: "forms/CUSTOMER%20INFORMATION%20(update).pptx%20%5BRead-Only%5D%20(1).pptx", file: "CUSTOMER INFORMATION (update).pptx [Read-Only] (1).pptx" },
+    { nameVi: "Biên bản xác nhận trả trưng bày (FOC)", nameEn: "FOC display payment acknowledgment", descVi: "Excel", descEn: "Excel", href: "forms/BI%C3%8AN%20B%E1%BA%A2N%20X%C3%81C%20NH%E1%BA%ACN%20TR%E1%BA%A2%20TR%C6%AFNG%20B%C3%80Y.xlsx", file: "BIÊN BẢN XÁC NHẬN TRẢ TRƯNG BÀY.xlsx" },
+    { nameVi: "Biên bản hỗ trợ trưng bày (Hợp đồng trưng bày)", nameEn: "Display support agreement (display contract)", descVi: "Word", descEn: "Word", href: "forms/Bi%C3%AAn%20b%E1%BA%A3n%20h%E1%BB%97%20tr%E1%BB%A3%20Tr%C6%B0ng%20b%C3%A0y%20form%20(update).doc", file: "Biên bản hỗ trợ Trưng bày form (update).doc" }
+  ];
+
+  const REF_DOCS = [
+    { label: "Display process - TT Channel.pptx", href: "Display%20process%20-%20TT%20Channel.pptx" },
+    { label: "Display project [BiteeZ & Mix] - New.pptx", href: "Display%20project%20TT%20Channel%20%5BBiteeZ%20%26%20Mix%5D%20-%20New.pptx" },
+    { label: "Display project — Mekong Delta.pptx", href: "Display%20project%20TT%20Channel%20%5BBiteeZ%20%26%20Mix%5D%20-%20apply%20for%20Mekong%20Delta.pptx" },
+    { label: "Chương trình Miến TT (lần 3).pptx", href: "Ch%C6%B0%C6%A1ng%20tr%C3%ACnh%20tr%C6%B0ng%20b%C3%A0y%20mi%E1%BA%BFn%20k%C3%AAnh%20TT%20-%20c%E1%BA%ADp%20nh%E1%BA%ADt%20l%E1%BA%A7n%203.pptx" },
+  ];
+
+  let lang = "vi";
+
+  function t(key) {
+    return (I18N[lang][key] != null) ? I18N[lang][key] : key;
+  }
+
+  function applyI18n() {
+    document.documentElement.lang = lang;
+    document.querySelectorAll("[data-i18n]").forEach((el) => {
+      const key = el.getAttribute("data-i18n");
+      const val = t(key);
+      if (typeof val !== "string") return;
+      if (val.indexOf("<") >= 0) el.innerHTML = val;
+      else el.textContent = val;
+    });
+    document.querySelectorAll("[data-i18n-opt]").forEach((el) => {
+      el.textContent = t(el.getAttribute("data-i18n-opt"));
+    });
+    document.querySelectorAll("[data-i18n-html]").forEach((el) => {
+      el.innerHTML = t(el.getAttribute("data-i18n-html"));
+    });
+    document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
+      el.placeholder = t(el.getAttribute("data-i18n-placeholder"));
+    });
+    fillPosmAreaOptions();
+    renderTimeline();
+    renderRules();
+    renderFocList();
+    renderRewards();
+    renderForms();
+    runLookup();
+    renderPosm();
+  }
+
+  function renderTimeline() {
+    const box = document.getElementById("timeline-steps");
+    box.innerHTML = t("steps").map((s, i) => `
+      <article class="timeline-step">
+        <div class="step-num">${i + 1}</div>
+        <div>
+          <p class="step-title">${s.title}</p>
+          <p class="step-pic">${s.pic}</p>
+          ${s.body ? `<p class="step-body">${s.body}</p>` : ""}
+        </div>
+      </article>`).join("");
+  }
+
+  function renderRules() {
+    document.getElementById("rules-list").innerHTML = t("rules").map((r) => `<li>${r}</li>`).join("");
+  }
+
+  function renderFocList() {
+    document.getElementById("foc-must-list").innerHTML = t("focMust").map((r) => `<li>${r}</li>`).join("");
+  }
+
+  function renderRewards() {
+    const sub = lang === "vi" ? "Standee & Hanger" : "Standee & Hanger";
+    const block = (frameHtml) =>
+      frameHtml + `<h5 style="margin:16px 0 8px;font-size:14px;color:var(--c-royal)">${sub}</h5>` + REWARD_HTML.standee[lang];
+    document.getElementById("reward-south-snack").innerHTML = block(REWARD_HTML.nationalSouth[lang]);
+    document.getElementById("reward-north-snack").innerHTML = block(REWARD_HTML.nationalNorth[lang]);
+    document.getElementById("reward-mekong-snack").innerHTML = block(REWARD_HTML.mekong[lang]);
+  }
+
+  function showRewardRegion(region) {
+    document.querySelectorAll(".region-tab").forEach((b) => {
+      b.classList.toggle("is-active", b.dataset.region === region);
+    });
+    document.querySelectorAll(".reward-region-panel").forEach((p) => {
+      p.hidden = p.dataset.region !== region;
+    });
+  }
+
+  function downloadFile(href, filename) {
+    return fetch(href)
+      .then((r) => {
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return r.blob();
+      })
+      .then((blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename || href.split("/").pop();
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+      });
+  }
+
+  function renderForms() {
+    document.getElementById("form-downloads").innerHTML = FORMS.map((f, i) => `
+      <li>
+        <div class="form-meta">
+          <p class="form-name">${lang === "vi" ? f.nameVi : f.nameEn}</p>
+          <p class="form-desc">${lang === "vi" ? f.descVi : f.descEn}</p>
+        </div>
+        <a class="btn btn-primary" href="${f.href}" download="${f.file || ""}" data-form-idx="${i}">${lang === "vi" ? "Tải xuống" : "Download"}</a>
+      </li>`).join("");
+    document.getElementById("form-downloads").querySelectorAll("a[data-form-idx]").forEach((a) => {
+      a.addEventListener("click", (e) => {
+        const f = FORMS[Number(a.dataset.formIdx)];
+        if (!f) return;
+        e.preventDefault();
+        downloadFile(f.href, f.file).catch(() => { window.location.href = f.href; });
+      });
+    });
+    document.getElementById("ref-docs-list").innerHTML = REF_DOCS.map((d) =>
+      `<li><a href="${d.href}" download>${d.label}</a></li>`
+    ).join("");
+  }
+
+  function showSection(id) {
+    document.querySelectorAll(".panel-section").forEach((s) => { s.hidden = s.id !== id; });
+    document.querySelectorAll(".nav-tab").forEach((b) => {
+      b.classList.toggle("is-active", b.dataset.section === id);
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function runLookup() {
+    const goal = document.getElementById("lk-goal").value;
+    const line = document.getElementById("lk-line").value;
+    const region = document.getElementById("lk-region").value;
+    const brand = document.getElementById("lk-brand").value;
+    const posm = document.getElementById("lk-posm").value;
+    const out = document.getElementById("lookup-result");
+    const parts = [];
+    const vi = lang === "vi";
+
+    if (goal === "process") {
+      parts.push(vi ? "<strong>Gợi ý:</strong> Mở mục <em>9 bước quy trình</em>." : "<strong>Go to:</strong> <em>9-step process</em>.");
+      if (line === "snack") parts.push(vi ? "Snack: bước 4–5 (POSM, biên bản) và bước 6–8 (báo cáo, trả phí)." : "Snack: steps 4–8 for POSM, reporting, fees.");
+    }
+    if (goal === "reward") {
+      parts.push(vi ? "<strong>Gợi ý:</strong> Mở <em>Chương trình theo ngành</em>." : "<strong>Go to:</strong> <em>Programs</em>.");
+      if (line === "snack") {
+        if (region === "mekong") parts.push(vi ? "Mở <strong>Mekong</strong> — Mix 2 mức (4M / 3M), BiteeZ 2 mức (3M / 2M)." : "Open <strong>Mekong</strong> for Mix and BiteeZ tiers.");
+        else if (region === "south") parts.push(vi ? "Mở <strong>South</strong> — Mix DS tối thiểu 4 triệu/tháng." : "Open <strong>South</strong> — Mix min 4M/month.");
+        else if (region === "north") parts.push(vi ? "Mở <strong>North</strong> — Mix DS tối thiểu 5 triệu/tháng." : "Open <strong>North</strong> — Mix min 5M/month.");
+        else parts.push(vi ? "Chọn vùng <strong>South / North / Mekong</strong> trong Phần 2." : "Pick <strong>South / North / Mekong</strong> in Part 2.");
+        if (brand === "mix" && posm === "frame") parts.push(vi ? "Mix Frame: 2 mâm, 2 thùng Mix 50g (hoặc 2/1 thùng tại ĐBSCL)." : "Mix Frame: 2 trays, reward per region table.");
+        if (brand === "biteez" && posm === "frame") parts.push(vi ? "BiteeZ: 2 mức theo DS 3M / 2M." : "BiteeZ: two tiers at 3M / 2M sales.");
+      }
+      if (line === "mien") parts.push(vi ? "Xem khung & kệ — thưởng gói/tháng." : "See frame & shelf monthly pack rewards.");
+    }
+    if (goal === "posm") {
+      parts.push(vi ? "<strong>Gợi ý:</strong> Mục <em>Kế hoạch Snack (NPP & POSM)</em>." : "<strong>Go to:</strong> <em>Snack plan (NPP & POSM)</em>.");
+      if (region === "north" || region === "south") {
+        parts.push(vi ? `Lọc bảng: <strong>${region === "north" ? "Tổng Bắc" : "Tổng Nam"}</strong>.` : `Filter: <strong>${region} total</strong>.`);
+      }
+    }
+    if (goal === "foc") {
+      parts.push(vi ? "<strong>Gợi ý:</strong> Mục <em>FOC & viếng thăm</em> + biên bản FOC trong Forms." : "<strong>Go to:</strong> <em>FOC & visits</em> + FOC form.");
+    }
+    if (goal === "forms") {
+      parts.push(vi ? "<strong>Gợi ý:</strong> Mục <em>Form mẫu</em>." : "<strong>Go to:</strong> <em>Form templates</em>.");
+      if (line === "snack") parts.push(vi ? "Đăng ký CH (SNACK), Customer Information, Biên bản FOC." : "Registration (SNACK), Customer Information, FOC form.");
+      if (line === "mien") parts.push(vi ? "Đăng ký CH (sheet MIẾN)." : "Registration (Noodles sheet).");
+    }
+    if (!parts.length) parts.push(vi ? "Chọn thêm tuỳ chọn để thu hẹp kết quả." : "Adjust filters to narrow results.");
+
+    const jump = [];
+    if (goal === "process") jump.push(["timeline", vi ? "Xem quy trình" : "View process"]);
+    if (goal === "reward") jump.push(["programs", vi ? "Xem chương trình" : "View programs"]);
+    if (goal === "posm") jump.push(["posm", vi ? "Xem POSM" : "View POSM"]);
+    if (goal === "foc") jump.push(["foc", vi ? "Xem FOC" : "View FOC"]);
+    if (goal === "forms") jump.push(["forms", vi ? "Tải form mẫu" : "Download templates"]);
+
+    out.innerHTML = parts.map((p) => `<p>${p}</p>`).join("") +
+      (jump.length ? `<p>${jump.map(([id, lbl]) => `<button type="button" class="btn btn-ghost lookup-jump" data-jump="${id}">${lbl}</button>`).join(" ")}</p>` : "");
+    out.querySelectorAll(".lookup-jump").forEach((btn) => {
+      btn.addEventListener("click", () => showSection(btn.dataset.jump));
+    });
+  }
+
+  function posmRowClass(kind) {
+    if (kind === "areaTotal") return "posm-area-total";
+    if (kind === "regionTotal") return "posm-region-total";
+    if (kind === "national") return "posm-national-total";
+    return "";
+  }
+
+  function posmMatchesFilter(r) {
+    const hq = document.getElementById("posm-hq-filter").value;
+    const area = document.getElementById("posm-area-filter").value;
+    const q = document.getElementById("posm-search").value.trim().toLowerCase();
+    const showTotals = document.getElementById("posm-show-totals").checked;
+
+    if (r.kind === "npp") {
+      if (hq !== "all" && r.region !== hq) return false;
+      if (area !== "all" && r.area !== area) return false;
+      if (q) {
+        const hay = `${r.code || ""} ${r.name || ""}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    }
+    if (!showTotals) return false;
+    if (q) return false;
+    if (r.kind === "national") return hq === "all" && area === "all";
+    if (r.kind === "regionTotal") {
+      if (area !== "all") return false;
+      return hq === "all" || hq === r.region;
+    }
+    if (r.kind === "areaTotal") {
+      if (hq !== "all" && r.region !== hq) return false;
+      if (area !== "all" && r.area !== area) return false;
+      return true;
+    }
+    return false;
+  }
+
+  function fillPosmAreaOptions() {
+    const data = window.DISPLAY_ALLOCATION_NPP || [];
+    const hq = document.getElementById("posm-hq-filter").value;
+    const sel = document.getElementById("posm-area-filter");
+    const prev = sel.value;
+    const areas = [...new Set(
+      data.filter((r) => r.kind === "npp" && (hq === "all" || r.region === hq)).map((r) => r.area).filter(Boolean)
+    )].sort();
+    const t = I18N[lang];
+    sel.innerHTML = `<option value="all">${t.posmAreaAll}</option>` +
+      areas.map((a) => `<option value="${a.replace(/"/g, "&quot;")}">${a}</option>`).join("");
+    if (areas.includes(prev)) sel.value = prev;
+  }
+
+  function renderPosm() {
+    const data = window.DISPLAY_ALLOCATION_NPP || [];
+    const rows = data.filter(posmMatchesFilter);
+    const nppCount = rows.filter((r) => r.kind === "npp").length;
+    const t = I18N[lang];
+    const countEl = document.getElementById("posm-row-count");
+    if (countEl) countEl.textContent = t.posmRowCount.replace("{n}", String(nppCount)).replace("{t}", String(rows.length));
+
+    const esc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;");
+    const cell = (v) => (v === 0 || v ? esc(v) : "—");
+    const tbody = document.querySelector("#posm-table tbody");
+    tbody.innerHTML = rows.map((r) => {
+      if (r.kind === "npp") {
+        return `<tr class="${posmRowClass(r.kind)}">
+          <td>${esc(r.hq || r.region)}</td>
+          <td>${esc(r.area)}</td>
+          <td>${esc(r.code)}</td>
+          <td class="posm-name">${esc(r.name)}</td>
+          <td>${cell(r.frameMixPlan)}</td><td>${cell(r.standeeMixPlan)}</td>
+          <td>${cell(r.allocFrameMix)}</td><td>${cell(r.allocStandeeMix)}</td><td>${cell(r.allocHangerMix)}</td>
+          <td>${cell(r.frameBzPlan)}</td><td>${cell(r.standeeBzPlan)}</td>
+          <td>${cell(r.allocFrameBz)}</td><td>${cell(r.allocStandeeBz)}</td><td>${cell(r.allocHangerBz)}</td>
+        </tr>`;
+      }
+      const label = r.label || r.area || (r.kind === "regionTotal" ? `TOTAL ${r.region}` : "National");
+      return `<tr class="${posmRowClass(r.kind)}">
+        <td colspan="4" class="posm-total-label">${esc(label)}</td>
+        <td>${cell(r.frameMixPlan)}</td><td>${cell(r.standeeMixPlan)}</td>
+        <td>${cell(r.allocFrameMix)}</td><td>${cell(r.allocStandeeMix)}</td><td>${cell(r.allocHangerMix)}</td>
+        <td>${cell(r.frameBzPlan)}</td><td>${cell(r.standeeBzPlan)}</td>
+        <td>${cell(r.allocFrameBz)}</td><td>${cell(r.allocStandeeBz)}</td><td>${cell(r.allocHangerBz)}</td>
+      </tr>`;
+    }).join("");
+  }
+
+  document.querySelectorAll(".lang-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      lang = btn.dataset.lang;
+      document.querySelectorAll(".lang-btn").forEach((b) => b.classList.toggle("is-active", b === btn));
+      applyI18n();
+    });
+  });
+
+  document.querySelectorAll(".nav-tab").forEach((tab) => {
+    tab.addEventListener("click", () => showSection(tab.dataset.section));
+  });
+
+  ["lk-goal", "lk-line", "lk-region", "lk-brand", "lk-posm"].forEach((id) => {
+    document.getElementById(id).addEventListener("change", runLookup);
+  });
+  document.getElementById("posm-hq-filter").addEventListener("change", () => {
+    fillPosmAreaOptions();
+    renderPosm();
+  });
+  document.getElementById("posm-area-filter").addEventListener("change", renderPosm);
+  document.getElementById("posm-search").addEventListener("input", renderPosm);
+  document.getElementById("posm-show-totals").addEventListener("change", renderPosm);
+  fillPosmAreaOptions();
+
+  document.querySelectorAll(".region-tab").forEach((tab) => {
+    tab.addEventListener("click", () => showRewardRegion(tab.dataset.region));
+  });
+  showRewardRegion("south");
+
+  try {
+    applyI18n();
+    showSection("overview");
+  } catch (err) {
+    console.error(err);
+    const hint = document.getElementById("open-hint");
+    if (hint) {
+      hint.style.display = "block";
+      hint.textContent = "Trang gặp lỗi JavaScript. Thử chạy open_display_process.bat hoặc mở http://127.0.0.1:8765/index.html — " + err.message;
+    }
+  }
+
+  if (location.protocol === "file:") {
+    const hint = document.getElementById("open-hint");
+    if (hint) {
+      hint.style.display = "block";
+      hint.innerHTML = "Bạn đang mở file trực tiếp (file://). Nên chạy <strong>open_display_process.bat</strong> trong thư mục <code>webdisplayprocess</code> để tải form mẫu ổn định. Hoặc: <code>cd webdisplayprocess</code> → <code>python -m http.server 8765</code> → mở <a href=\"http://127.0.0.1:8765/index.html\">http://127.0.0.1:8765/index.html</a>";
+    }
+  }
+
+  if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./sw.js").catch(() => {});
+    });
+  }
+})();
+  </script>
+</body>
+</html>
