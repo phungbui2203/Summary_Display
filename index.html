@@ -336,6 +336,17 @@
   try {
     if (!window.supabase) throw new Error("Supabase SDK missing");
     const supabaseApp = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Portal (khác domain) truyền session qua hash → set rồi xóa token khỏi URL
+    const hashParams = new URLSearchParams(String(location.hash || "").replace(/^#/, ""));
+    const access_token = hashParams.get("access_token");
+    const refresh_token = hashParams.get("refresh_token");
+    if (access_token && refresh_token) {
+      const { error: setErr } = await supabaseApp.auth.setSession({ access_token, refresh_token });
+      history.replaceState(null, "", location.pathname + location.search);
+      if (setErr) throw setErr;
+    }
+
     const { data: { session } } = await supabaseApp.auth.getSession();
     if (!session) {
       alert("Truy cập bị từ chối! Vui lòng đăng nhập hệ thống.");
