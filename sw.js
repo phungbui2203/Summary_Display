@@ -1,5 +1,5 @@
 /* Summary_Display service worker — cache shell + assets, skip large docs */
-const CACHE = "display-v3-plan-alert";
+const CACHE = "display-v4-pink-pill";
 const PRECACHE = [
   "./",
   "./index.html",
