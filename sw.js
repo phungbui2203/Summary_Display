@@ -1,10 +1,11 @@
 /* Summary_Display service worker — cache shell + assets, skip large docs */
-const CACHE = "display-v1";
+const CACHE = "display-v3-plan-alert";
 const PRECACHE = [
   "./",
   "./index.html",
   "./styles.css",
   "./allocation-data.js",
+  "./plan-vs-actual-data.js",
   "./assets/thaicorp-logo.png",
   "./assets/standards/snack-frame.jpg",
   "./assets/standards/snack-standee.jpg",

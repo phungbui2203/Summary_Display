@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="allocation-data.js"></script>
+  <script src="plan-vs-actual-data.js"></script>
   <style>
     html.auth-pending body { visibility: hidden; }
   </style>
@@ -226,6 +227,38 @@
     <!-- POSM allocation -->
     <section id="posm" class="section panel-section" hidden>
       <h2 data-i18n="posmTitle">Kế hoạch trưng bày Snack theo NPP</h2>
+
+      <div class="card plan-alert-panel" id="plan-alert-panel">
+        <h3 data-i18n="planAlertTitle">Cảnh báo vượt Allocation Plan — Tháng 9</h3>
+        <div class="plan-alert-summary" id="plan-alert-summary" aria-live="polite"></div>
+        <div class="plan-alert-actions">
+          <label class="posm-filter-check plan-alert-toggle">
+            <input type="checkbox" id="plan-alert-only-over" checked>
+            <span data-i18n="planAlertOnlyOver">Chỉ hiện dòng vượt plan</span>
+          </label>
+          <a class="btn btn-ghost" id="plan-alert-all-download" href="#" download hidden data-i18n="planAlertDownloadAll">Tải tất cả KH vượt plan</a>
+        </div>
+        <div class="data-table-wrap data-table-wrap--posm">
+          <table class="data-table data-table--posm" id="plan-alert-table">
+            <thead>
+              <tr>
+                <th data-i18n="posmColHq">Miền</th>
+                <th data-i18n="posmColArea">Area</th>
+                <th data-i18n="posmColName">NPP</th>
+                <th data-i18n="planAlertBrand">Ngành</th>
+                <th data-i18n="planAlertPosm">POSM</th>
+                <th data-i18n="planAlertPlan">Plan</th>
+                <th data-i18n="planAlertActual">Total customer</th>
+                <th data-i18n="planAlertOver">Vượt</th>
+                <th data-i18n="planAlertStatus">Trạng thái</th>
+                <th data-i18n="planAlertDownload">Tải DS KH</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
       <div class="card posm-legend">
         <h3 data-i18n="posmLegendTitle">Cách đọc bảng</h3>
         <ul class="posm-legend-list" data-i18n-html="posmLegendBody"></ul>
@@ -335,23 +368,26 @@
 
   try {
     if (!window.supabase) throw new Error("Supabase SDK missing");
-    const supabaseApp = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const isLocalHost = ["localhost", "127.0.0.1"].includes(location.hostname) || location.protocol === "file:";
+    if (!isLocalHost) {
+      const supabaseApp = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Portal (khác domain) truyền session qua hash → set rồi xóa token khỏi URL
-    const hashParams = new URLSearchParams(String(location.hash || "").replace(/^#/, ""));
-    const access_token = hashParams.get("access_token");
-    const refresh_token = hashParams.get("refresh_token");
-    if (access_token && refresh_token) {
-      const { error: setErr } = await supabaseApp.auth.setSession({ access_token, refresh_token });
-      history.replaceState(null, "", location.pathname + location.search);
-      if (setErr) throw setErr;
-    }
+      // Portal (khác domain) truyền session qua hash → set rồi xóa token khỏi URL
+      const hashParams = new URLSearchParams(String(location.hash || "").replace(/^#/, ""));
+      const access_token = hashParams.get("access_token");
+      const refresh_token = hashParams.get("refresh_token");
+      if (access_token && refresh_token) {
+        const { error: setErr } = await supabaseApp.auth.setSession({ access_token, refresh_token });
+        history.replaceState(null, "", location.pathname + location.search);
+        if (setErr) throw setErr;
+      }
 
-    const { data: { session } } = await supabaseApp.auth.getSession();
-    if (!session) {
-      alert("Truy cập bị từ chối! Vui lòng đăng nhập hệ thống.");
-      window.location.href = PORTAL_HOME;
-      return;
+      const { data: { session } } = await supabaseApp.auth.getSession();
+      if (!session) {
+        alert("Truy cập bị từ chối! Vui lòng đăng nhập hệ thống.");
+        window.location.href = PORTAL_HOME;
+        return;
+      }
     }
   } catch (authErr) {
     console.error(authErr);
@@ -418,6 +454,16 @@
       posmGrpAllocMix: "POSM gửi NPP — Mix (ALLOCATE POSM)", posmGrpAllocBz: "POSM gửi NPP — BiteeZ (ALLOCATE POSM)",
       posmRowCount: "{n} NPP · {t} dòng hiển thị",
       posmDownload: "Tải file Excel đầy đủ",
+      planAlertTitle: "Cảnh báo vượt Allocation Plan — Tháng 9",
+      planAlertOnlyOver: "Chỉ hiện dòng vượt plan",
+      planAlertBrand: "Ngành", planAlertPosm: "POSM", planAlertPlan: "Plan",
+      planAlertActual: "Total customer", planAlertOver: "Vượt", planAlertStatus: "Trạng thái",
+      planAlertOk: "Trong plan", planAlertOverLabel: "Vượt plan",
+      planAlertSummary: "{a} khu vực cảnh báo · {n} NPP vượt plan",
+      planAlertEmpty: "Không có NPP nào vượt plan theo bộ lọc hiện tại.",
+      planAlertDownload: "Tải DS KH",
+      planAlertDownloadBtn: "Tải Excel",
+      planAlertDownloadAll: "Tải tất cả KH vượt plan",
       focTitle: "FOC trưng bày & tần suất viếng thăm", focLead: "Bắt buộc cho sales team — tránh ảnh hưởng quyền lợi.",
       focMustTitle: "Khi trả hàng FOC trưng bày, bắt buộc:",
       focBlock: "Thiếu biên bản & ảnh FOC kỳ trước → không đủ điều kiện thanh toán phí trưng bày tháng kế tiếp.",
@@ -503,6 +549,16 @@
       posmGrpAllocMix: "POSM to NPP — Mix (ALLOCATE POSM)", posmGrpAllocBz: "POSM to NPP — BiteeZ (ALLOCATE POSM)",
       posmRowCount: "{n} NPP · {t} rows shown",
       posmDownload: "Download full Excel",
+      planAlertTitle: "Over-plan alert — Month 9",
+      planAlertOnlyOver: "Show over-plan rows only",
+      planAlertBrand: "Brand", planAlertPosm: "POSM", planAlertPlan: "Plan",
+      planAlertActual: "Total customer", planAlertOver: "Over", planAlertStatus: "Status",
+      planAlertOk: "Within plan", planAlertOverLabel: "Over plan",
+      planAlertSummary: "{a} alert areas · {n} NPP over plan",
+      planAlertEmpty: "No NPP over plan for the current filter.",
+      planAlertDownload: "Customer list",
+      planAlertDownloadBtn: "Download Excel",
+      planAlertDownloadAll: "Download all over-plan customers",
       focTitle: "Display FOC & visit frequency", focLead: "Mandatory for sales — protects eligibility and display fees.",
       focMustTitle: "When delivering display FOC, you must:",
       focBlock: "Missing prior-period FOC form and photos → not eligible for next-month display fee payment.",
@@ -864,6 +920,115 @@
         <td>${cell(r.allocFrameBz)}</td><td>${cell(r.allocStandeeBz)}</td><td>${cell(r.allocHangerBz)}</td>
       </tr>`;
     }).join("");
+    renderPlanAlerts();
+  }
+
+  function planAlertRows() {
+    const data = window.DISPLAY_PLAN_VS_ACTUAL;
+    if (!data) return [];
+    const onlyOver = document.getElementById("plan-alert-only-over")?.checked !== false;
+    const hq = document.getElementById("posm-hq-filter")?.value || "all";
+    const area = document.getElementById("posm-area-filter")?.value || "all";
+    const q = (document.getElementById("posm-search")?.value || "").trim().toLowerCase();
+
+    const metricKey = {
+      Mix: { Frame: ["frameMixPlan", "frameMixActual"], Standee: ["standeeMixPlan", "standeeMixActual"] },
+      BiteeZ: { Frame: ["frameBzPlan", "frameBzActual"], Standee: ["standeeBzPlan", "standeeBzActual"] },
+    };
+
+    const out = [];
+    for (const row of data.rows || []) {
+      if (hq !== "all" && String(row.hq || "").toLowerCase() !== hq) continue;
+      if (area !== "all" && row.area !== area) continue;
+      if (q) {
+        const blob = `${row.code || ""} ${row.name || ""}`.toLowerCase();
+        if (!blob.includes(q)) continue;
+      }
+      for (const brand of ["Mix", "BiteeZ"]) {
+        for (const posm of ["Frame", "Standee"]) {
+          const [planKey, actualKey] = metricKey[brand][posm];
+          const plan = Number(row[planKey] || 0);
+          const actual = Number(row[actualKey] || 0);
+          const over = actual - plan;
+          if (onlyOver && over <= 0) continue;
+          if (!onlyOver && actual === 0 && plan === 0) continue;
+          out.push({
+            hq: row.hq,
+            area: row.area,
+            name: row.name,
+            key: row.key,
+            brand,
+            posm,
+            plan,
+            actual,
+            over,
+            download: (data.downloads || {})[`${row.key}|${brand}|${posm}`] || null,
+          });
+        }
+      }
+    }
+    out.sort((a, b) => (b.over - a.over) || String(a.name).localeCompare(String(b.name)) || a.brand.localeCompare(b.brand));
+    return out;
+  }
+
+  function renderPlanAlerts() {
+    const data = window.DISPLAY_PLAN_VS_ACTUAL;
+    const t = I18N[lang];
+    const summaryEl = document.getElementById("plan-alert-summary");
+    const tbody = document.querySelector("#plan-alert-table tbody");
+    if (!summaryEl || !tbody) return;
+
+    if (!data) {
+      summaryEl.innerHTML = `<div class="alert alert-warning">Chưa có dữ liệu plan-vs-actual. Chạy <code>python build_plan_vs_actual.py</code>.</div>`;
+      tbody.innerHTML = "";
+      return;
+    }
+
+    const s = data.summary || {};
+    summaryEl.innerHTML = `
+      <div class="plan-alert-kpi ${s.overAlertCount ? "is-over" : "is-ok"}">
+        ${s.overAlertCount ? `<span class="plan-alert-icon" aria-hidden="true" title="Warning"><svg viewBox="0 0 24 24" width="18" height="18" focusable="false"><path fill="#fff" stroke="#e53935" stroke-width="2.2" stroke-linejoin="round" d="M12 3.2L21.5 20.2H2.5L12 3.2z"/><rect x="11.1" y="9" width="1.8" height="6.2" rx="0.6" fill="#212121"/><circle cx="12" cy="17.4" r="1.05" fill="#212121"/></svg></span>` : ""}
+        <span>${t.planAlertSummary
+          .replace("{a}", String(s.overAlertCount ?? 0))
+          .replace("{n}", String(s.nppOverCount ?? 0))}</span>
+      </div>`;
+
+    const allDl = document.getElementById("plan-alert-all-download");
+    if (allDl) {
+      if (data.allDownload) {
+        allDl.hidden = false;
+        allDl.href = data.allDownload;
+        allDl.setAttribute("download", "");
+        allDl.textContent = t.planAlertDownloadAll;
+      } else {
+        allDl.hidden = true;
+      }
+    }
+
+    const esc = (v) => String(v ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;");
+    const rows = planAlertRows();
+    if (!rows.length) {
+      tbody.innerHTML = `<tr><td colspan="10" class="plan-alert-empty">${esc(t.planAlertEmpty)}</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = rows.map((r) => {
+      const over = r.over > 0;
+      const dl = over && r.download
+        ? `<a class="btn btn-ghost plan-dl-btn" href="${esc(r.download)}" download>${esc(t.planAlertDownloadBtn)}</a>`
+        : "—";
+      return `<tr class="${over ? "plan-row-over" : "plan-row-ok"}">
+        <td>${esc(r.hq)}</td>
+        <td>${esc(r.area)}</td>
+        <td class="posm-name">${esc(r.name)}</td>
+        <td>${esc(r.brand)}</td>
+        <td>${esc(r.posm)}</td>
+        <td>${esc(r.plan)}</td>
+        <td>${esc(r.actual)}</td>
+        <td class="${over ? "plan-over-num" : ""}">${over ? "+" + esc(r.over) : "0"}</td>
+        <td><span class="plan-status ${over ? "is-over" : "is-ok"}">${esc(over ? t.planAlertOverLabel : t.planAlertOk)}</span></td>
+        <td>${dl}</td>
+      </tr>`;
+    }).join("");
   }
 
   document.querySelectorAll(".lang-btn").forEach((btn) => {
@@ -888,6 +1053,7 @@
   document.getElementById("posm-area-filter").addEventListener("change", renderPosm);
   document.getElementById("posm-search").addEventListener("input", renderPosm);
   document.getElementById("posm-show-totals").addEventListener("change", renderPosm);
+  document.getElementById("plan-alert-only-over")?.addEventListener("change", renderPlanAlerts);
   fillPosmAreaOptions();
 
   document.querySelectorAll(".region-tab").forEach((tab) => {
