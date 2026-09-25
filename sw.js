@@ -1,5 +1,5 @@
 /* Summary_Display service worker — cache shell + assets, skip large docs */
-const CACHE = "display-v4-nocache-plan";
+const CACHE = "display-v5-alloc-plan-sep25";
 /* Data JS must NOT be precached — rebuilds would stay invisible under SWR. */
 const PRECACHE = [
   "./",
