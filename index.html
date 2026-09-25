@@ -6,8 +6,8 @@
   <title>Quy trình Trưng bày TT | ThaiCorp Display Process</title>
   <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="allocation-data.js?v=20260925c"></script>
-  <script src="plan-vs-actual-data.js?v=20260925c"></script>
+  <script src="allocation-data.js?v=20260925d"></script>
+  <script src="plan-vs-actual-data.js?v=20260925d"></script>
   <style>
     html.auth-pending body { visibility: hidden; }
   </style>
@@ -306,21 +306,13 @@
                 <th rowspan="2" data-i18n="posmColCode">Mã NPP</th>
                 <th rowspan="2" data-i18n="posmColName">NPP</th>
                 <th colspan="2" class="th-group th-group--mix" data-i18n="posmGrpPlanMix">Kế hoạch CH — Mix (Allocation Plan)</th>
-                <th colspan="3" class="th-group th-group--mix" data-i18n="posmGrpAllocMix">POSM gửi NPP — Mix (ALLOCATE POSM)</th>
                 <th colspan="2" class="th-group th-group--bz" data-i18n="posmGrpPlanBz">Kế hoạch CH — BiteeZ (Allocation Plan)</th>
-                <th colspan="3" class="th-group th-group--bz" data-i18n="posmGrpAllocBz">POSM gửi NPP — BiteeZ (ALLOCATE POSM)</th>
               </tr>
               <tr>
                 <th class="th-group--mix" data-i18n="posmColFrame">Frame</th>
                 <th class="th-group--mix" data-i18n="posmColStandee">Standee</th>
-                <th class="th-group--mix" data-i18n="posmColFrame">Frame</th>
-                <th class="th-group--mix" data-i18n="posmColStandee">Standee</th>
-                <th class="th-group--mix" data-i18n="posmColHanger">Hanger</th>
                 <th class="th-group--bz" data-i18n="posmColFrame">Frame</th>
                 <th class="th-group--bz" data-i18n="posmColStandee">Standee</th>
-                <th class="th-group--bz" data-i18n="posmColFrame">Frame</th>
-                <th class="th-group--bz" data-i18n="posmColStandee">Standee</th>
-                <th class="th-group--bz" data-i18n="posmColHanger">Hanger</th>
               </tr>
             </thead>
             <tbody></tbody>
@@ -447,7 +439,7 @@
       mienImg2: "Standee — Cách 1 & Cách 2 (1,3m × 0,5m × 0,25m)",
       posmTitle: "Kế hoạch trưng bày Snack theo NPP",
       posmLegendTitle: "Cách đọc bảng",
-      posmLegendBody: "<li><strong>Allocation Plan</strong> (Kế hoạch cửa hàng): số <em>cửa hàng</em> được phép đăng ký trưng bày theo loại POSM (Frame / Standee).</li><li><strong>ALLOCATE POSM</strong>: số lượng <em>POSM tối đa</em> được gửi về NPP (Frame / Standee / Hanger) — không phải số cửa hàng.</li><li>Mix và BiteeZ tách riêng hai khối cột như trên Excel.</li>",
+      posmLegendBody: "<li><strong>Allocation Plan</strong> (Kế hoạch cửa hàng): số <em>cửa hàng</em> được phép đăng ký trưng bày theo loại POSM (Frame / Standee).</li><li>Mix và BiteeZ tách riêng hai khối cột.</li>",
       posmFilterHq: "Miền", posmHqAll: "Tất cả", posmHqSouth: "Miền Nam", posmHqNorth: "Miền Bắc",
       posmFilterArea: "Khu vực (Area)", posmAreaAll: "Tất cả",
       posmFilterSearch: "Tìm NPP", posmSearchPh: "Mã hoặc tên NPP",
@@ -542,7 +534,7 @@
       mienImg2: "Standee — layout 1 & 2 (1.3m H × 0.5m W × 0.25m D)",
       posmTitle: "Snack display plan by NPP",
       posmLegendTitle: "How to read the table",
-      posmLegendBody: "<li><strong>Allocation Plan</strong>: number of <em>stores</em> allowed to register for display (Frame / Standee).</li><li><strong>ALLOCATE POSM</strong>: maximum <em>POSM units</em> shipped to the NPP (Frame / Standee / Hanger) — not store count.</li><li>Mix and BiteeZ are separate column groups, matching Excel.</li>",
+      posmLegendBody: "<li><strong>Allocation Plan</strong>: number of <em>stores</em> allowed to register for display (Frame / Standee).</li><li>Mix and BiteeZ are separate column groups.</li>",
       posmFilterHq: "Region", posmHqAll: "All", posmHqSouth: "South", posmHqNorth: "North",
       posmFilterArea: "Area", posmAreaAll: "All",
       posmFilterSearch: "Search NPP", posmSearchPh: "Code or name",
@@ -910,18 +902,14 @@
           <td>${esc(r.code)}</td>
           <td class="posm-name">${esc(r.name)}</td>
           <td>${cell(r.frameMixPlan)}</td><td>${cell(r.standeeMixPlan)}</td>
-          <td>${cell(r.allocFrameMix)}</td><td>${cell(r.allocStandeeMix)}</td><td>${cell(r.allocHangerMix)}</td>
           <td>${cell(r.frameBzPlan)}</td><td>${cell(r.standeeBzPlan)}</td>
-          <td>${cell(r.allocFrameBz)}</td><td>${cell(r.allocStandeeBz)}</td><td>${cell(r.allocHangerBz)}</td>
         </tr>`;
       }
       const label = r.label || r.area || (r.kind === "regionTotal" ? `TOTAL ${r.region}` : "National");
       return `<tr class="${posmRowClass(r.kind)}">
         <td colspan="4" class="posm-total-label">${esc(label)}</td>
         <td>${cell(r.frameMixPlan)}</td><td>${cell(r.standeeMixPlan)}</td>
-        <td>${cell(r.allocFrameMix)}</td><td>${cell(r.allocStandeeMix)}</td><td>${cell(r.allocHangerMix)}</td>
         <td>${cell(r.frameBzPlan)}</td><td>${cell(r.standeeBzPlan)}</td>
-        <td>${cell(r.allocFrameBz)}</td><td>${cell(r.allocStandeeBz)}</td><td>${cell(r.allocHangerBz)}</td>
       </tr>`;
     }).join("");
     renderPlanAlerts();
