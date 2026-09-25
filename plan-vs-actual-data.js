@@ -18,30 +18,13 @@ window.DISPLAY_PLAN_VS_ACTUAL = {
   },
   "summary": {
     "nppCount": 36,
-    "overAlertCount": 1,
-    "nppOverCount": 1,
+    "overAlertCount": 0,
+    "nppOverCount": 0,
     "unmatchedCount": 0
   },
-  "allDownload": "plan-over-exports/All_over_plan_customers.xlsx",
-  "downloads": {
-    "huyenhao|Mix|Standee": "plan-over-exports/Huyen_Hao_Mix_Standee.xlsx"
-  },
-  "alerts": [
-    {
-      "hq": "North",
-      "area": "North West",
-      "code": "NPP240",
-      "name": "Huyền Hảo",
-      "key": "huyenhao",
-      "brand": "Mix",
-      "posm": "Standee",
-      "actual": 3,
-      "plan": 2,
-      "over": 1,
-      "download": "plan-over-exports/Huyen_Hao_Mix_Standee.xlsx",
-      "alertKey": "huyenhao|Mix|Standee"
-    }
-  ],
+  "allDownload": null,
+  "downloads": {},
+  "alerts": [],
   "rows": [
     {
       "hq": "South",
@@ -581,21 +564,11 @@ window.DISPLAY_PLAN_VS_ACTUAL = {
       "frameBzPlan": 27,
       "standeeBzPlan": 2,
       "frameMixActual": 22,
-      "standeeMixActual": 3,
+      "standeeMixActual": 2,
       "frameBzActual": 27,
       "standeeBzActual": 1,
-      "overItems": [
-        {
-          "brand": "Mix",
-          "posm": "Standee",
-          "actual": 3,
-          "plan": 2,
-          "over": 1,
-          "download": "plan-over-exports/Huyen_Hao_Mix_Standee.xlsx",
-          "alertKey": "huyenhao|Mix|Standee"
-        }
-      ],
-      "isOver": true
+      "overItems": [],
+      "isOver": false
     },
     {
       "hq": "North",

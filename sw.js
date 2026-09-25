@@ -1,11 +1,10 @@
 /* Summary_Display service worker — cache shell + assets, skip large docs */
-const CACHE = "display-v5-download-pos";
+const CACHE = "display-v4-nocache-plan";
+/* Data JS must NOT be precached — rebuilds would stay invisible under SWR. */
 const PRECACHE = [
   "./",
   "./index.html",
   "./styles.css",
-  "./allocation-data.js",
-  "./plan-vs-actual-data.js",
   "./assets/thaicorp-logo.png",
   "./assets/standards/snack-frame.jpg",
   "./assets/standards/snack-standee.jpg",
@@ -18,6 +17,7 @@ const PRECACHE = [
 ];
 
 const SKIP_EXT = /\.(pptx|ppt|pdf|xlsx|xls|doc|docx)(\?|$)/i;
+const NETWORK_FIRST_JS = /\/(plan-vs-actual-data|allocation-data)\.js$/i;
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -34,7 +34,7 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
+      Promise.all(keys.map((k) => caches.delete(k)))
     ).then(() => self.clients.claim())
   );
 });
@@ -50,6 +50,12 @@ self.addEventListener("fetch", (event) => {
   const isAsset = url.pathname.includes("/assets/");
   const isNav = req.mode === "navigate" || url.pathname.endsWith("/") || url.pathname.endsWith(".html");
 
+  /* Always prefer fresh plan/allocation data after rebuild. */
+  if (NETWORK_FIRST_JS.test(url.pathname)) {
+    event.respondWith(networkFirst(req));
+    return;
+  }
+
   if (isAsset) {
     event.respondWith(cacheFirst(req));
     return;
@@ -59,6 +65,19 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(staleWhileRevalidate(req));
   }
 });
+
+async function networkFirst(req) {
+  const cache = await caches.open(CACHE);
+  try {
+    const res = await fetch(req, { cache: "no-store" });
+    if (res.ok) cache.put(req, res.clone());
+    return res;
+  } catch (err) {
+    const cached = await cache.match(req);
+    if (cached) return cached;
+    throw err;
+  }
+}
 
 async function cacheFirst(req) {
   const cached = await caches.match(req);
