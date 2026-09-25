@@ -1,4 +1,4 @@
-/** Generated from Snack Display (Allocation Plan).xlsx — sheet POSM. */
+/** Generated from Snack Display (Allocation Plan).xlsx — sheet Allocation Plan. */
 window.DISPLAY_ALLOCATION_NPP = [
   {
     "kind": "npp",
@@ -11,12 +11,12 @@ window.DISPLAY_ALLOCATION_NPP = [
     "name": "Hoàng Phong",
     "frameMixPlan": 20,
     "standeeMixPlan": 2,
-    "allocFrameMix": 17,
+    "allocFrameMix": 0,
     "allocStandeeMix": 0,
     "allocHangerMix": 0,
     "frameBzPlan": 8,
     "standeeBzPlan": 2,
-    "allocFrameBz": 7,
+    "allocFrameBz": 5,
     "allocStandeeBz": 0,
     "allocHangerBz": 10
   },
@@ -31,7 +31,7 @@ window.DISPLAY_ALLOCATION_NPP = [
     "name": "Mai Liên Thành",
     "frameMixPlan": 10,
     "standeeMixPlan": 2,
-    "allocFrameMix": 8,
+    "allocFrameMix": 4,
     "allocStandeeMix": 0,
     "allocHangerMix": 0,
     "frameBzPlan": 3,
@@ -51,13 +51,13 @@ window.DISPLAY_ALLOCATION_NPP = [
     "name": "Thái Sơn",
     "frameMixPlan": 10,
     "standeeMixPlan": 15,
-    "allocFrameMix": 7,
+    "allocFrameMix": 5,
     "allocStandeeMix": 12,
     "allocHangerMix": 10,
     "frameBzPlan": 3,
     "standeeBzPlan": 2,
-    "allocFrameBz": 3,
-    "allocStandeeBz": 1,
+    "allocFrameBz": 2,
+    "allocStandeeBz": 0,
     "allocHangerBz": 10
   },
   {
@@ -71,12 +71,12 @@ window.DISPLAY_ALLOCATION_NPP = [
     "name": "Vạn Thành Công",
     "frameMixPlan": 10,
     "standeeMixPlan": 5,
-    "allocFrameMix": 4,
+    "allocFrameMix": 0,
     "allocStandeeMix": 2,
     "allocHangerMix": 10,
     "frameBzPlan": 3,
     "standeeBzPlan": 2,
-    "allocFrameBz": 3,
+    "allocFrameBz": 1,
     "allocStandeeBz": 0,
     "allocHangerBz": 10
   },
@@ -92,7 +92,7 @@ window.DISPLAY_ALLOCATION_NPP = [
     "frameMixPlan": 0,
     "standeeMixPlan": 9,
     "allocFrameMix": 0,
-    "allocStandeeMix": 7,
+    "allocStandeeMix": 1,
     "allocHangerMix": 10,
     "frameBzPlan": 2,
     "standeeBzPlan": 2,
@@ -107,13 +107,13 @@ window.DISPLAY_ALLOCATION_NPP = [
     "area": "HCMC",
     "frameMixPlan": 50,
     "standeeMixPlan": 33,
-    "allocFrameMix": 36,
-    "allocStandeeMix": 21,
+    "allocFrameMix": 9,
+    "allocStandeeMix": 15,
     "allocHangerMix": 30,
     "frameBzPlan": 19,
     "standeeBzPlan": 10,
-    "allocFrameBz": 13,
-    "allocStandeeBz": 1,
+    "allocFrameBz": 8,
+    "allocStandeeBz": 0,
     "allocHangerBz": 50
   },
   {
@@ -154,7 +154,7 @@ window.DISPLAY_ALLOCATION_NPP = [
     "standeeBzPlan": 2,
     "allocFrameBz": 2,
     "allocStandeeBz": 2,
-    "allocHangerBz": 10
+    "allocHangerBz": 20
   },
   {
     "kind": "npp",
@@ -228,13 +228,13 @@ window.DISPLAY_ALLOCATION_NPP = [
     "frameMixPlan": 8,
     "standeeMixPlan": 2,
     "allocFrameMix": 4,
-    "allocStandeeMix": 1,
+    "allocStandeeMix": 0,
     "allocHangerMix": 10,
     "frameBzPlan": 3,
     "standeeBzPlan": 1,
     "allocFrameBz": 3,
     "allocStandeeBz": 0,
-    "allocHangerBz": 10
+    "allocHangerBz": 20
   },
   {
     "kind": "areaTotal",
@@ -244,13 +244,13 @@ window.DISPLAY_ALLOCATION_NPP = [
     "frameMixPlan": 30,
     "standeeMixPlan": 5,
     "allocFrameMix": 6,
-    "allocStandeeMix": 1,
+    "allocStandeeMix": 0,
     "allocHangerMix": 50,
     "frameBzPlan": 11,
     "standeeBzPlan": 6,
     "allocFrameBz": 5,
     "allocStandeeBz": 2,
-    "allocHangerBz": 50
+    "allocHangerBz": 80
   },
   {
     "kind": "npp",
@@ -459,7 +459,7 @@ window.DISPLAY_ALLOCATION_NPP = [
     "name": "Bạch Mai",
     "frameMixPlan": 10,
     "standeeMixPlan": 10,
-    "allocFrameMix": 8,
+    "allocFrameMix": 7,
     "allocStandeeMix": 3,
     "allocHangerMix": 0,
     "frameBzPlan": 2,
@@ -480,7 +480,7 @@ window.DISPLAY_ALLOCATION_NPP = [
     "frameMixPlan": 10,
     "standeeMixPlan": 8,
     "allocFrameMix": 2,
-    "allocStandeeMix": 2,
+    "allocStandeeMix": 1,
     "allocHangerMix": 10,
     "frameBzPlan": 2,
     "standeeBzPlan": 1,
@@ -539,7 +539,7 @@ window.DISPLAY_ALLOCATION_NPP = [
     "name": "Song Nhiên",
     "frameMixPlan": 4,
     "standeeMixPlan": 0,
-    "allocFrameMix": 2,
+    "allocFrameMix": 0,
     "allocStandeeMix": 0,
     "allocHangerMix": 0,
     "frameBzPlan": 2,
@@ -555,8 +555,8 @@ window.DISPLAY_ALLOCATION_NPP = [
     "area": "Eastern",
     "frameMixPlan": 65,
     "standeeMixPlan": 20,
-    "allocFrameMix": 13,
-    "allocStandeeMix": 5,
+    "allocFrameMix": 10,
+    "allocStandeeMix": 4,
     "allocHangerMix": 20,
     "frameBzPlan": 12,
     "standeeBzPlan": 15,
@@ -646,14 +646,14 @@ window.DISPLAY_ALLOCATION_NPP = [
     "label": "South",
     "frameMixPlan": 242,
     "standeeMixPlan": 70,
-    "allocFrameMix": 85,
-    "allocStandeeMix": 30,
+    "allocFrameMix": 55,
+    "allocStandeeMix": 22,
     "allocHangerMix": 195,
     "frameBzPlan": 65,
     "standeeBzPlan": 70,
-    "allocFrameBz": 30,
-    "allocStandeeBz": 39,
-    "allocHangerBz": 245
+    "allocFrameBz": 25,
+    "allocStandeeBz": 38,
+    "allocHangerBz": 275
   },
   {
     "kind": "npp",
@@ -900,14 +900,14 @@ window.DISPLAY_ALLOCATION_NPP = [
     "label": "National",
     "frameMixPlan": 370,
     "standeeMixPlan": 85,
-    "allocFrameMix": 127,
-    "allocStandeeMix": 37,
+    "allocFrameMix": 97,
+    "allocStandeeMix": 29,
     "allocHangerMix": 275,
     "frameBzPlan": 140,
     "standeeBzPlan": 80,
-    "allocFrameBz": 87,
-    "allocStandeeBz": 40,
-    "allocHangerBz": 325
+    "allocFrameBz": 82,
+    "allocStandeeBz": 39,
+    "allocHangerBz": 355
   }
 ];
 
@@ -917,13 +917,13 @@ window.DISPLAY_ALLOCATION = [
     "region": "south",
     "frameMixPlan": 50,
     "standeeMixPlan": 33,
-    "allocFrameMix": 36,
-    "allocStandeeMix": 21,
+    "allocFrameMix": 9,
+    "allocStandeeMix": 15,
     "allocHangerMix": 30,
     "frameBzPlan": 19,
     "standeeBzPlan": 10,
-    "allocFrameBz": 13,
-    "allocStandeeBz": 1,
+    "allocFrameBz": 8,
+    "allocStandeeBz": 0,
     "allocHangerBz": 50
   },
   {
@@ -932,13 +932,13 @@ window.DISPLAY_ALLOCATION = [
     "frameMixPlan": 30,
     "standeeMixPlan": 5,
     "allocFrameMix": 6,
-    "allocStandeeMix": 1,
+    "allocStandeeMix": 0,
     "allocHangerMix": 50,
     "frameBzPlan": 11,
     "standeeBzPlan": 6,
     "allocFrameBz": 5,
     "allocStandeeBz": 2,
-    "allocHangerBz": 50
+    "allocHangerBz": 80
   },
   {
     "label": "SMK",
@@ -959,8 +959,8 @@ window.DISPLAY_ALLOCATION = [
     "region": "south",
     "frameMixPlan": 65,
     "standeeMixPlan": 20,
-    "allocFrameMix": 13,
-    "allocStandeeMix": 5,
+    "allocFrameMix": 10,
+    "allocStandeeMix": 4,
     "allocHangerMix": 20,
     "frameBzPlan": 12,
     "standeeBzPlan": 15,
@@ -987,14 +987,14 @@ window.DISPLAY_ALLOCATION = [
     "region": "south",
     "frameMixPlan": 242,
     "standeeMixPlan": 70,
-    "allocFrameMix": 85,
-    "allocStandeeMix": 30,
+    "allocFrameMix": 55,
+    "allocStandeeMix": 22,
     "allocHangerMix": 195,
     "frameBzPlan": 65,
     "standeeBzPlan": 70,
-    "allocFrameBz": 30,
-    "allocStandeeBz": 39,
-    "allocHangerBz": 245
+    "allocFrameBz": 25,
+    "allocStandeeBz": 38,
+    "allocHangerBz": 275
   },
   {
     "label": "Hanoi",
@@ -1071,13 +1071,13 @@ window.DISPLAY_ALLOCATION = [
     "region": "all",
     "frameMixPlan": 370,
     "standeeMixPlan": 85,
-    "allocFrameMix": 127,
-    "allocStandeeMix": 37,
+    "allocFrameMix": 97,
+    "allocStandeeMix": 29,
     "allocHangerMix": 275,
     "frameBzPlan": 140,
     "standeeBzPlan": 80,
-    "allocFrameBz": 87,
-    "allocStandeeBz": 40,
-    "allocHangerBz": 325
+    "allocFrameBz": 82,
+    "allocStandeeBz": 39,
+    "allocHangerBz": 355
   }
 ];
