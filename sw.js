@@ -1,5 +1,5 @@
 /* Summary_Display service worker — cache shell + assets, skip large docs */
-const CACHE = "display-v21-update-date-badge";
+const CACHE = "display-v22-force-latest-styles";
 /* Data JS must NOT be precached — rebuilds would stay invisible under SWR. */
 const PRECACHE = [
   "./",
