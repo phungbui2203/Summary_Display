@@ -1,5 +1,5 @@
 /* Summary_Display service worker — cache shell + assets, skip large docs */
-const CACHE = "display-v6-ch-plan-only";
+const CACHE = "display-v21-update-date-badge";
 /* Data JS must NOT be precached — rebuilds would stay invisible under SWR. */
 const PRECACHE = [
   "./",
@@ -17,7 +17,7 @@ const PRECACHE = [
 ];
 
 const SKIP_EXT = /\.(pptx|ppt|pdf|xlsx|xls|doc|docx)(\?|$)/i;
-const NETWORK_FIRST_JS = /\/(plan-vs-actual-data|allocation-data)\.js$/i;
+const NETWORK_FIRST_JS = /\/(plan-vs-actual-data|allocation-data|posm-delivery-data|display-detail-data|update-date)\.js$/i;
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -34,7 +34,7 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.map((k) => caches.delete(k)))
+      Promise.all(keys.filter((k) => k.startsWith("display-v")).map((k) => caches.delete(k)))
     ).then(() => self.clients.claim())
   );
 });
@@ -61,7 +61,13 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  if (isNav || url.pathname.endsWith(".css") || url.pathname.endsWith(".js")) {
+  /* Always fetch the HTML shell from the server so local edits are visible on reload. */
+  if (isNav) {
+    event.respondWith(networkFirst(req));
+    return;
+  }
+
+  if (url.pathname.endsWith(".css") || url.pathname.endsWith(".js")) {
     event.respondWith(staleWhileRevalidate(req));
   }
 });

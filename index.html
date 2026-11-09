@@ -7,7 +7,10 @@
   <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="allocation-data.js?v=20260925d"></script>
+  <script src="posm-delivery-data.js?v=20261105e"></script>
   <script src="plan-vs-actual-data.js?v=20260925d"></script>
+  <script src="display-detail-data.js?v=20261109a"></script>
+  <script src="update-date.js?v=20261109a"></script>
   <style>
     html.auth-pending body { visibility: hidden; }
   </style>
@@ -34,8 +37,10 @@
       <button type="button" class="nav-tab" data-section="lookup" data-i18n="navLookup">Tra cứu nhanh</button>
       <button type="button" class="nav-tab" data-section="programs" data-i18n="navPrograms">Chương trình theo ngành</button>
       <button type="button" class="nav-tab" data-section="posm" data-i18n="navPosm">Kế hoạch Snack (NPP &amp; POSM)</button>
+      <button type="button" class="nav-tab" data-section="detail" data-i18n="navDetail">Detail</button>
       <button type="button" class="nav-tab" data-section="foc" data-i18n="navFoc">FOC &amp; viếng thăm</button>
       <button type="button" class="nav-tab" data-section="forms" data-i18n="navForms">Form mẫu</button>
+      <span class="data-updated" id="data-updated" aria-live="polite"></span>
     </nav>
   </header>
 
@@ -229,7 +234,7 @@
       <h2 data-i18n="posmTitle">Kế hoạch trưng bày Snack theo NPP</h2>
 
       <div class="card plan-alert-panel" id="plan-alert-panel">
-        <h3 data-i18n="planAlertTitle">Cảnh báo vượt Allocation Plan — Tháng 9</h3>
+        <h3 id="plan-alert-title" data-i18n="planAlertTitle">Cảnh báo vượt Allocation Plan</h3>
         <div class="plan-alert-summary" id="plan-alert-summary" aria-live="polite"></div>
         <div class="plan-alert-actions">
           <label class="posm-filter-check plan-alert-toggle">
@@ -295,7 +300,7 @@
             <h3 data-i18n="posmTableTitle">Chi tiết theo NPP</h3>
             <p class="form-desc" id="posm-row-count" aria-live="polite"></p>
           </div>
-          <a class="btn btn-ghost posm-download-btn" href="Snack%20Display%20(Allocation%20Plan).xlsx" download data-i18n="posmDownload">Tải file Excel đầy đủ</a>
+          <button type="button" class="btn btn-primary posm-download-btn" id="posm-export-btn" data-i18n="posmDownload">Tải file Excel</button>
         </div>
         <div class="data-table-wrap data-table-wrap--posm">
           <table class="data-table data-table--posm" id="posm-table">
@@ -306,15 +311,71 @@
                 <th rowspan="2" data-i18n="posmColCode">Mã NPP</th>
                 <th rowspan="2" data-i18n="posmColName">NPP</th>
                 <th colspan="2" class="th-group th-group--mix" data-i18n="posmGrpPlanMix">Kế hoạch CH — Mix (Allocation Plan)</th>
+                <th colspan="3" class="th-group th-group--mix th-group--sent" data-i18n="posmGrpSentMix">POSM đã gửi — Mix</th>
                 <th colspan="2" class="th-group th-group--bz" data-i18n="posmGrpPlanBz">Kế hoạch CH — BiteeZ (Allocation Plan)</th>
+                <th colspan="3" class="th-group th-group--bz th-group--sent" data-i18n="posmGrpSentBz">POSM đã gửi — BiteeZ</th>
               </tr>
               <tr>
                 <th class="th-group--mix" data-i18n="posmColFrame">Frame</th>
                 <th class="th-group--mix" data-i18n="posmColStandee">Standee</th>
+                <th class="th-group--mix th-subhead--sent" data-i18n="posmColHanger">Hanger</th>
+                <th class="th-group--mix th-subhead--sent" data-i18n="posmColFrame">Frame</th>
+                <th class="th-group--mix th-subhead--sent" data-i18n="posmColStandee">Standee</th>
                 <th class="th-group--bz" data-i18n="posmColFrame">Frame</th>
                 <th class="th-group--bz" data-i18n="posmColStandee">Standee</th>
+                <th class="th-group--bz th-subhead--sent" data-i18n="posmColHanger">Hanger</th>
+                <th class="th-group--bz th-subhead--sent" data-i18n="posmColFrame">Frame</th>
+                <th class="th-group--bz th-subhead--sent" data-i18n="posmColStandee">Standee</th>
               </tr>
             </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Display detail -->
+    <section id="detail" class="section panel-section" hidden>
+      <h2 data-i18n="detailTitle">Chi tiết đăng ký trưng bày</h2>
+      <p class="section-lead" data-i18n="detailLead">Dữ liệu từ file tháng mới nhất của Mix và BiteeZ không bao gồm khách hàng đã hủy.</p>
+      <div class="detail-top-row">
+          <div class="card detail-filter-card">
+            <h3 data-i18n="detailFilters">Bộ lọc</h3>
+            <label><span data-i18n="detailProductFilter">Sản phẩm</span>
+              <select id="detail-product-filter"><option value="all" data-i18n-opt="detailAll">Tất cả</option><option value="BiteeZ">BiteeZ</option><option value="Mix">Mix</option></select>
+            </label>
+            <label><span data-i18n="detailAreaFilter">Khu vực</span><select id="detail-area-filter"><option value="all" data-i18n-opt="detailAll">Tất cả</option></select></label>
+            <label><span data-i18n="detailKamFilter">KAM</span><select id="detail-kam-filter"><option value="all" data-i18n-opt="detailAll">Tất cả</option></select></label>
+            <label><span data-i18n="detailNppFilter">NPP</span><select id="detail-npp-filter"><option value="all" data-i18n-opt="detailAll">Tất cả</option></select></label>
+            <label><span data-i18n="detailTypeFilter">Loại POSM</span><select id="detail-type-filter"><option value="all" data-i18n-opt="detailAll">Tất cả</option></select></label>
+          </div>
+      </div>
+      <div class="card detail-summary-card">
+        <h3 data-i18n="detailSummary">Tổng quan</h3>
+        <div class="detail-overview-grid">
+          <div class="detail-kpi"><span data-i18n="detailTotal">Tổng cửa hàng</span><strong id="detail-total-count">0</strong></div>
+          <div class="detail-kpi detail-kpi--yes"><span data-i18n="detailWithPosm">Có POSM</span><strong id="detail-with-posm-count">0</strong></div>
+          <div class="detail-kpi detail-kpi--no"><span data-i18n="detailWithoutPosm">Chưa có POSM</span><strong id="detail-without-posm-count">0</strong></div>
+          <div class="detail-kpi detail-kpi--sent"><span data-i18n="detailHangerTitle">Hanger đã gửi</span><strong id="detail-hanger-sent">0</strong></div>
+          <div class="detail-kpi detail-kpi--sent"><span data-i18n="detailFrameStandeeTitle">Frame + Standee đã gửi</span><strong id="detail-frame-standee-sent">0</strong></div>
+        </div>
+      </div>
+      <div class="card detail-table-card">
+        <div class="posm-table-header">
+          <div>
+            <h3 data-i18n="detailTableTitle">Danh sách chi tiết</h3>
+            <p class="form-desc" id="detail-row-count" aria-live="polite"></p>
+          </div>
+          <button type="button" class="btn btn-primary" id="detail-export-btn" data-i18n="detailExport">Tải file Excel</button>
+        </div>
+        <div class="data-table-wrap detail-table-wrap">
+          <table class="data-table detail-table" id="detail-table">
+            <thead><tr>
+              <th data-i18n="detailMonth">Month</th><th data-i18n="detailHq">HQ</th><th data-i18n="detailArea">Area</th><th data-i18n="detailProvince">Province</th>
+              <th data-i18n="detailDistributor">Distributor</th><th data-i18n="detailCdm">CDM PIC</th><th data-i18n="detailKam">KAM PIC</th><th data-i18n="detailKae">KAE PIC</th>
+              <th data-i18n="detailCustomerCode">Customer Code</th><th data-i18n="detailCustomer">Customer name</th><th data-i18n="detailAddress">Address</th><th data-i18n="detailPhone">Phone</th>
+              <th data-i18n="detailProduct">Product line</th><th data-i18n="detailRegisterDay">Register day</th><th data-i18n="detailPosmType">Register display type</th><th data-i18n="detailPosmSituation">POSM situation</th>
+            </tr></thead>
             <tbody></tbody>
           </table>
         </div>
@@ -398,7 +459,7 @@
       pageTitle: "Quy trình Trưng bày — Kênh TT",
       pageSubtitle: "Tổng quan · Tra cứu nhanh · Form mẫu & hướng dẫn chương trình",
       navOverview: "Tổng quan", navTimeline: "9 bước quy trình", navLookup: "Tra cứu nhanh",
-      navPrograms: "Chương trình theo ngành", navPosm: "Kế hoạch Snack (NPP & POSM)", navFoc: "FOC & viếng thăm", navForms: "Form mẫu",
+      navPrograms: "Chương trình theo ngành", navPosm: "Kế hoạch Snack (NPP & POSM)", navDetail: "Detail", navFoc: "FOC & viếng thăm", navForms: "Form mẫu", dataUpdated: "Cập nhật {date}",
       overviewTitle: "Bạn đang ở đâu trong hành trình trưng bày?",
       cardTrainTitle: "Onboarding", cardTrainBody: "Bắt đầu từ mục <strong>9 bước quy trình</strong>.",
       cardLookupTitle: "Tra cứu nhanh", cardLookupBody: "Chọn mục đích → ngành hàng → vùng → loại POSM để xem đúng quy định và mức thưởng.",
@@ -438,8 +499,16 @@
       mienImg1: "Frame — kích thước 1m × 0,8m",
       mienImg2: "Standee — Cách 1 & Cách 2 (1,3m × 0,5m × 0,25m)",
       posmTitle: "Kế hoạch trưng bày Snack theo NPP",
+      detailTitle: "Chi tiết đăng ký trưng bày",
+      detailLead: "Dữ liệu từ file tháng mới nhất của Mix và BiteeZ không bao gồm khách hàng đã hủy.",
+      detailTableTitle: "Danh sách chi tiết", detailExport: "Tải file Excel", detailFilters: "Bộ lọc", detailProductFilter: "Sản phẩm", detailAreaFilter: "Khu vực", detailKamFilter: "KAM", detailNppFilter: "NPP", detailTypeFilter: "Loại POSM",
+      detailAll: "Tất cả", detailSummary: "Tổng quan", detailTotal: "Tổng cửa hàng", detailWithPosm: "Có POSM", detailWithoutPosm: "Chưa có POSM",
+      detailHangerTitle: "Hanger đã gửi", detailFrameStandeeTitle: "Frame + Standee đã gửi",
+      detailCount: "{n} cửa hàng hiển thị · tháng mới nhất: Mix {mix}, BiteeZ {bz}", detailNoData: "Không có dữ liệu chi tiết. Tạo file display-detail-data.js từ hai file tháng mới nhất trong listdisplay.",
+      detailMonth: "Month", detailHq: "HQ", detailArea: "Area", detailProvince: "Province", detailDistributor: "Distributor", detailCdm: "CDM PIC", detailKam: "KAM PIC", detailKae: "KAE PIC",
+      detailCustomerCode: "Customer Code", detailCustomer: "Customer name", detailAddress: "Address", detailPhone: "Phone", detailProduct: "Product line", detailRegisterDay: "Register day", detailPosmType: "Register display type", detailPosmSituation: "POSM situation",
       posmLegendTitle: "Cách đọc bảng",
-      posmLegendBody: "<li><strong>Allocation Plan</strong> (Kế hoạch cửa hàng): số <em>cửa hàng</em> được phép đăng ký trưng bày theo loại POSM (Frame / Standee).</li><li>Mix và BiteeZ tách riêng hai khối cột.</li>",
+      posmLegendBody: "<li><strong>Allocation Plan</strong>: số <em>cửa hàng</em> được phép đăng ký trưng bày theo loại POSM (Frame / Standee).</li><li><strong>POSM đã gửi</strong>: tổng số lượng POSM đã gửi cho NPP.</li><li>Mix và BiteeZ tách riêng hai khối cột.</li>",
       posmFilterHq: "Miền", posmHqAll: "Tất cả", posmHqSouth: "Miền Nam", posmHqNorth: "Miền Bắc",
       posmFilterArea: "Khu vực (Area)", posmAreaAll: "Tất cả",
       posmFilterSearch: "Tìm NPP", posmSearchPh: "Mã hoặc tên NPP",
@@ -447,10 +516,11 @@
       posmTableTitle: "Chi tiết theo NPP", posmColHq: "Miền", posmColArea: "Area", posmColCode: "Mã NPP", posmColName: "NPP",
       posmColFrame: "Frame", posmColStandee: "Standee", posmColHanger: "Hanger",
       posmGrpPlanMix: "Kế hoạch CH — Mix (Allocation Plan)", posmGrpPlanBz: "Kế hoạch CH — BiteeZ (Allocation Plan)",
+      posmGrpSentMix: "POSM đã gửi — Mix", posmGrpSentBz: "POSM đã gửi — BiteeZ",
       posmGrpAllocMix: "POSM gửi NPP — Mix (ALLOCATE POSM)", posmGrpAllocBz: "POSM gửi NPP — BiteeZ (ALLOCATE POSM)",
       posmRowCount: "{n} NPP · {t} dòng hiển thị",
-      posmDownload: "Tải file Excel đầy đủ",
-      planAlertTitle: "Cảnh báo vượt Allocation Plan — Tháng 9",
+      posmDownload: "Tải file Excel",
+      planAlertTitle: "Cảnh báo vượt Allocation Plan — {month}",
       planAlertOnlyOver: "Chỉ hiện dòng vượt plan",
       planAlertBrand: "Ngành", planAlertPosm: "POSM", planAlertPlan: "Plan",
       planAlertActual: "Total customer", planAlertOver: "Vượt", planAlertStatus: "Trạng thái",
@@ -493,7 +563,7 @@
       pageTitle: "Display Process — TT Channel",
       pageSubtitle: "Overview · Quick lookup · Forms & program guides",
       navOverview: "Overview", navTimeline: "9-step process", navLookup: "Quick lookup",
-      navPrograms: "Programs by category", navPosm: "Snack plan (NPP & POSM)", navFoc: "FOC & visits", navForms: "Forms",
+      navPrograms: "Programs by category", navPosm: "Snack plan (NPP & POSM)", navDetail: "Detail", navFoc: "FOC & visits", navForms: "Forms", dataUpdated: "Updated {date}",
       overviewTitle: "Where are you in the display journey?",
       cardTrainTitle: "Onboarding", cardTrainBody: "Start with the <strong>9-step process</strong>.",
       cardLookupTitle: "Quick lookup", cardLookupBody: "Pick purpose → line → region → POSM type for the right rules and rewards.",
@@ -533,8 +603,16 @@
       mienImg1: "Frame — 1m × 0.8m",
       mienImg2: "Standee — layout 1 & 2 (1.3m H × 0.5m W × 0.25m D)",
       posmTitle: "Snack display plan by NPP",
+      detailTitle: "Display registration details",
+      detailLead: "Data from the latest monthly Mix and BiteeZ files, excluding canceled customers.",
+      detailTableTitle: "Detailed records", detailExport: "Download Excel file", detailFilters: "Filters", detailProductFilter: "Product", detailAreaFilter: "Area", detailKamFilter: "KAM", detailNppFilter: "Distributor (NPP)", detailTypeFilter: "POSM type",
+      detailAll: "All", detailSummary: "Summary", detailTotal: "Total stores", detailWithPosm: "Have POSM", detailWithoutPosm: "No POSM",
+      detailHangerTitle: "Hanger delivered", detailFrameStandeeTitle: "Frame + Standee delivered",
+      detailCount: "{n} stores shown · latest files: Mix {mix}, BiteeZ {bz}", detailNoData: "No detail data loaded. Generate display-detail-data.js from the latest monthly files in listdisplay.",
+      detailMonth: "Month", detailHq: "HQ", detailArea: "Area", detailProvince: "Province", detailDistributor: "Distributor", detailCdm: "CDM PIC", detailKam: "KAM PIC", detailKae: "KAE PIC",
+      detailCustomerCode: "Customer Code", detailCustomer: "Customer name", detailAddress: "Address", detailPhone: "Phone", detailProduct: "Product line", detailRegisterDay: "Register day", detailPosmType: "Register display type", detailPosmSituation: "POSM situation",
       posmLegendTitle: "How to read the table",
-      posmLegendBody: "<li><strong>Allocation Plan</strong>: number of <em>stores</em> allowed to register for display (Frame / Standee).</li><li>Mix and BiteeZ are separate column groups.</li>",
+      posmLegendBody: "<li><strong>Allocation Plan</strong>: number of <em>stores</em> allowed to register for display (Frame / Standee).</li><li><strong>POSM sent</strong>: total quantity of POSM sent to the distributor.</li><li>Mix and BiteeZ are separate column groups.</li>",
       posmFilterHq: "Region", posmHqAll: "All", posmHqSouth: "South", posmHqNorth: "North",
       posmFilterArea: "Area", posmAreaAll: "All",
       posmFilterSearch: "Search NPP", posmSearchPh: "Code or name",
@@ -542,10 +620,11 @@
       posmTableTitle: "NPP detail", posmColHq: "HQ", posmColArea: "Area", posmColCode: "NPP code", posmColName: "Distributor",
       posmColFrame: "Frame", posmColStandee: "Standee", posmColHanger: "Hanger",
       posmGrpPlanMix: "Store plan — Mix (Allocation Plan)", posmGrpPlanBz: "Store plan — BiteeZ (Allocation Plan)",
+      posmGrpSentMix: "POSM sent — Mix", posmGrpSentBz: "POSM sent — BiteeZ",
       posmGrpAllocMix: "POSM to NPP — Mix (ALLOCATE POSM)", posmGrpAllocBz: "POSM to NPP — BiteeZ (ALLOCATE POSM)",
       posmRowCount: "{n} NPP · {t} rows shown",
-      posmDownload: "Download full Excel",
-      planAlertTitle: "Over-plan alert — Month 9",
+      posmDownload: "Download Excel file",
+      planAlertTitle: "Over-plan alert — {month}",
       planAlertOnlyOver: "Show over-plan rows only",
       planAlertBrand: "Brand", planAlertPosm: "POSM", planAlertPlan: "Plan",
       planAlertActual: "Total customer", planAlertOver: "Over", planAlertStatus: "Status",
@@ -663,6 +742,8 @@
 
   function applyI18n() {
     document.documentElement.lang = lang;
+    const updatedEl = document.getElementById("data-updated");
+    if (updatedEl) updatedEl.textContent = t("dataUpdated").replace("{date}", window.DISPLAY_DATA_UPDATED_AT || "--/--/----");
     document.querySelectorAll("[data-i18n]").forEach((el) => {
       const key = el.getAttribute("data-i18n");
       const val = t(key);
@@ -680,6 +761,7 @@
       el.placeholder = t(el.getAttribute("data-i18n-placeholder"));
     });
     fillPosmAreaOptions();
+    fillDetailFilters();
     renderTimeline();
     renderRules();
     renderFocList();
@@ -687,6 +769,7 @@
     renderForms();
     runLookup();
     renderPosm();
+    renderDetail();
   }
 
   function renderTimeline() {
@@ -870,7 +953,7 @@
   }
 
   function fillPosmAreaOptions() {
-    const data = window.DISPLAY_ALLOCATION_NPP || [];
+    const data = getPosmDisplayRows();
     const hq = document.getElementById("posm-hq-filter").value;
     const sel = document.getElementById("posm-area-filter");
     const prev = sel.value;
@@ -883,8 +966,109 @@
     if (areas.includes(prev)) sel.value = prev;
   }
 
+  const POSM_SENT_KEYS = ["mixFrameSent", "mixStandeeSent", "mixHangerSent", "bzFrameSent", "bzStandeeSent", "bzHangerSent"];
+  const PLAN_TOTAL_KEYS = ["frameMixPlan", "standeeMixPlan", "frameBzPlan", "standeeBzPlan"];
+
+  function normalizeDistributorKey(value) {
+    let key = String(value || "").trim().toLowerCase().replace(/đ/g, "d").normalize("NFD");
+    key = key.replace(/[\u0300-\u036f]/g, "").replace(/^npp\s*/i, "").replace(/[^a-z0-9]/g, "");
+    const aliases = {
+      thaonguyenvinabacninh: "thaonguyenvina",
+      hailongthuanthien: "thuanthien",
+      mykim: "tranmykim",
+      phatphuoc: "phatphuocduc"
+    };
+    return aliases[key] || key;
+  }
+
+  function getPosmDisplayRows() {
+    const source = window.DISPLAY_ALLOCATION_NPP || [];
+    const deliveries = window.POSM_DELIVERY_TOTALS || [];
+    const deliveryByKey = new Map();
+    for (const item of deliveries) {
+      const key = normalizeDistributorKey(item.name);
+      if (!key) continue;
+      const total = deliveryByKey.get(key) || {
+        name: item.name,
+        hq: item.hq,
+        area: item.area,
+        mixFrameSent: 0,
+        mixStandeeSent: 0,
+        mixHangerSent: 0,
+        bzFrameSent: 0,
+        bzStandeeSent: 0,
+        bzHangerSent: 0
+      };
+      for (const metric of POSM_SENT_KEYS) total[metric] += Number(item[metric] || 0);
+      deliveryByKey.set(key, total);
+    }
+
+    const planRows = source.filter((row) => row.kind === "npp");
+    const plannedKeys = new Set(planRows.map((row) => normalizeDistributorKey(row.name)));
+    const seenKeys = new Set();
+    const rows = [];
+    const visibleNpps = [];
+    const extraRows = [];
+    const sentValues = (subset) => Object.fromEntries(POSM_SENT_KEYS.map((key) => [
+      key, subset.reduce((sum, row) => sum + Number(row[key] || 0), 0)
+    ]));
+    const appendExtras = (predicate) => {
+      for (const [key, item] of deliveryByKey) {
+        if (plannedKeys.has(key) || seenKeys.has(key) || !predicate(item)) continue;
+        const region = String(item.hq || "").toLowerCase();
+        const row = {
+          kind: "npp", region, hq: item.hq, area: item.area,
+          code: "", name: item.name.replace(/^NPP\s+/i, ""), deliveryOnly: true,
+          ...Object.fromEntries(PLAN_TOTAL_KEYS.map((metric) => [metric, 0])),
+          ...Object.fromEntries(POSM_SENT_KEYS.map((metric) => [metric, item[metric]]))
+        };
+        rows.push(row);
+        visibleNpps.push(row);
+        extraRows.push(row);
+        seenKeys.add(key);
+      }
+    };
+
+    for (const original of source) {
+      if (original.kind === "npp") {
+        const key = normalizeDistributorKey(original.name);
+        const delivered = deliveryByKey.get(key);
+        const row = {
+          ...original,
+          ...Object.fromEntries(POSM_SENT_KEYS.map((metric) => [metric, Number(delivered?.[metric] || 0)])),
+          deliveryOnly: key === "tranmykim"
+        };
+        rows.push(row);
+        visibleNpps.push(row);
+        if (delivered) seenKeys.add(key);
+        continue;
+      }
+      if (original.kind === "regionTotal") {
+        appendExtras((item) => String(item.hq || "").toLowerCase() === String(original.region || "").toLowerCase());
+        const regionRows = visibleNpps.filter((row) => row.region === original.region);
+        rows.push({ ...original, ...sentValues(regionRows) });
+        continue;
+      }
+      if (original.kind === "national") {
+        appendExtras(() => true);
+        rows.push({ ...original, ...sentValues(visibleNpps) });
+        continue;
+      }
+      if (original.kind === "areaTotal") {
+        appendExtras((item) => String(item.hq || "").toLowerCase() === String(original.region || "").toLowerCase() && item.area === original.area);
+        const areaRows = visibleNpps.filter((row) => row.region === original.region && row.area === original.area);
+        rows.push({ ...original, ...sentValues(areaRows) });
+        continue;
+      }
+      rows.push(original);
+    }
+
+    if (extraRows.length && !source.some((row) => row.kind === "national")) appendExtras(() => true);
+    return rows;
+  }
+
   function renderPosm() {
-    const data = window.DISPLAY_ALLOCATION_NPP || [];
+    const data = getPosmDisplayRows();
     const rows = data.filter(posmMatchesFilter);
     const nppCount = rows.filter((r) => r.kind === "npp").length;
     const t = I18N[lang];
@@ -892,27 +1076,58 @@
     if (countEl) countEl.textContent = t.posmRowCount.replace("{n}", String(nppCount)).replace("{t}", String(rows.length));
 
     const esc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;");
-    const cell = (v) => (v === 0 || v ? esc(v) : "—");
+    const cell = (v, className = "") => `<td${className ? ` class="${className}"` : ""}>${v === 0 || v ? esc(v) : "—"}</td>`;
     const tbody = document.querySelector("#posm-table tbody");
     tbody.innerHTML = rows.map((r) => {
       if (r.kind === "npp") {
-        return `<tr class="${posmRowClass(r.kind)}">
+        return `<tr class="${posmRowClass(r.kind)}${r.deliveryOnly ? " posm-delivery-only" : ""}">
           <td>${esc(r.hq || r.region)}</td>
           <td>${esc(r.area)}</td>
-          <td>${esc(r.code)}</td>
+          <td>${esc(r.code || "—")}</td>
           <td class="posm-name">${esc(r.name)}</td>
-          <td>${cell(r.frameMixPlan)}</td><td>${cell(r.standeeMixPlan)}</td>
-          <td>${cell(r.frameBzPlan)}</td><td>${cell(r.standeeBzPlan)}</td>
+          ${cell(r.frameMixPlan)}${cell(r.standeeMixPlan)}
+          ${cell(r.mixHangerSent, "posm-sent--mix")}${cell(r.mixFrameSent, "posm-sent--mix")}${cell(r.mixStandeeSent, "posm-sent--mix")}
+          ${cell(r.frameBzPlan)}${cell(r.standeeBzPlan)}
+          ${cell(r.bzHangerSent, "posm-sent--bz")}${cell(r.bzFrameSent, "posm-sent--bz")}${cell(r.bzStandeeSent, "posm-sent--bz")}
         </tr>`;
       }
       const label = r.label || r.area || (r.kind === "regionTotal" ? `TOTAL ${r.region}` : "National");
       return `<tr class="${posmRowClass(r.kind)}">
         <td colspan="4" class="posm-total-label">${esc(label)}</td>
-        <td>${cell(r.frameMixPlan)}</td><td>${cell(r.standeeMixPlan)}</td>
-        <td>${cell(r.frameBzPlan)}</td><td>${cell(r.standeeBzPlan)}</td>
+        ${cell(r.frameMixPlan)}${cell(r.standeeMixPlan)}
+        ${cell(r.mixHangerSent, "posm-sent--mix")}${cell(r.mixFrameSent, "posm-sent--mix")}${cell(r.mixStandeeSent, "posm-sent--mix")}
+        ${cell(r.frameBzPlan)}${cell(r.standeeBzPlan)}
+        ${cell(r.bzHangerSent, "posm-sent--bz")}${cell(r.bzFrameSent, "posm-sent--bz")}${cell(r.bzStandeeSent, "posm-sent--bz")}
       </tr>`;
     }).join("");
     renderPlanAlerts();
+  }
+
+  function exportPosmExcel() {
+    const table = document.getElementById("posm-table");
+    if (!table) return;
+    const clone = table.cloneNode(true);
+    const filters = [
+      [I18N[lang].posmFilterHq, document.querySelector("#posm-hq-filter option:checked")?.textContent || ""],
+      [I18N[lang].posmFilterArea, document.querySelector("#posm-area-filter option:checked")?.textContent || ""],
+      [I18N[lang].posmFilterSearch, document.getElementById("posm-search")?.value.trim() || (lang === "vi" ? "Tất cả" : "All")],
+      [lang === "vi" ? "Dòng tổng" : "Totals", document.getElementById("posm-show-totals")?.checked ? (lang === "vi" ? "Hiện" : "Shown") : (lang === "vi" ? "Ẩn" : "Hidden")]
+    ];
+    const htmlEscape = (value) => String(value ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    const filterRows = filters.map(([label, value]) => `<tr><th>${htmlEscape(label)}</th><td>${htmlEscape(value)}</td></tr>`).join("");
+    const title = htmlEscape(lang === "vi" ? "Kế hoạch Snack (NPP & POSM)" : "Snack Plan (Distributors & POSM)");
+    const workbook = `<!doctype html><html><head><meta charset="utf-8"><style>
+      body{font-family:Arial,sans-serif;color:#17324d}h2{color:#174a7e}table{border-collapse:collapse;margin:8px 0 20px}th,td{border:1px solid #b7c9da;padding:7px 9px;text-align:center;mso-number-format:"\\@"}thead th{background:#1d4b7d;color:#fff;font-weight:bold}.th-group--mix{background:#c2410c;color:#fff}.th-group--bz{background:#1e4a8a;color:#fff}.th-group--mix.th-group--sent{background:#9a3412}.th-group--bz.th-group--sent{background:#153b73}.th-subhead--sent.th-group--mix{background:#ffedd5;color:#7c2d12}.th-subhead--sent.th-group--bz{background:#dbeafe;color:#153b73}.posm-sent--mix{background:#fff7ed}.posm-sent--bz{background:#eff6ff}.posm-area-total{background:#fef9c3;font-weight:bold}.posm-region-total,.posm-national-total{background:#fde68a;font-weight:bold}.posm-delivery-only{background:#f3f7fc}
+      </style></head><body><h2>${title}</h2><table>${filterRows}</table>${clone.outerHTML}</body></html>`;
+    const blob = new Blob(["\ufeff", workbook], { type: "application/vnd.ms-excel;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "Ke_hoach_Snack_NPP_POSM.xls";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
   function planAlertRows() {
@@ -976,6 +1191,9 @@
       return;
     }
 
+    const alertTitle = document.getElementById("plan-alert-title");
+    if (alertTitle) alertTitle.textContent = t.planAlertTitle.replace("{month}", lang === "vi" ? (data.monthLabel || "") : (data.monthLabelEn || data.monthLabel || ""));
+
     const s = data.summary || {};
     summaryEl.innerHTML = `
       <div class="plan-alert-kpi ${s.overAlertCount ? "is-over" : "is-ok"}">
@@ -1023,6 +1241,129 @@
     }).join("");
   }
 
+  function fillDetailFilters() {
+    const rows = window.DISPLAY_DETAIL_ROWS || [];
+    const area = document.getElementById("detail-area-filter");
+    const kam = document.getElementById("detail-kam-filter");
+    const npp = document.getElementById("detail-npp-filter");
+    const type = document.getElementById("detail-type-filter");
+    if (!area || !kam || !npp || !type) return;
+    const oldArea = area.value || "all";
+    const oldKam = kam.value || "all";
+    const oldNpp = npp.value || "all";
+    const oldType = type.value || "all";
+    const escapeOption = (value) => String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+    const unique = (index) => [...new Set(rows.map((row) => String(row[index] || "").trim()).filter(Boolean))]
+      .sort((a, b) => a.localeCompare(b));
+    const fillSelect = (select, values, oldValue) => {
+      select.innerHTML = `<option value="all">${t("detailAll")}</option>` + values.map((v) => `<option value="${escapeOption(v)}">${escapeOption(v)}</option>`).join("");
+      if ([...select.options].some((option) => option.value === oldValue)) select.value = oldValue;
+    };
+    fillSelect(area, unique(2), oldArea);
+    fillSelect(kam, unique(6), oldKam);
+    fillSelect(npp, unique(4), oldNpp);
+    fillSelect(type, unique(14), oldType);
+  }
+
+  function getFilteredDetailRows() {
+    const source = window.DISPLAY_DETAIL_ROWS || [];
+    const product = document.getElementById("detail-product-filter")?.value || "all";
+    const area = document.getElementById("detail-area-filter")?.value || "all";
+    const kam = document.getElementById("detail-kam-filter")?.value || "all";
+    const npp = document.getElementById("detail-npp-filter")?.value || "all";
+    const type = document.getElementById("detail-type-filter")?.value || "all";
+    return source.filter((row) =>
+      (product === "all" || String(row[12] || "") === product) &&
+      (area === "all" || String(row[2] || "") === area) &&
+      (kam === "all" || String(row[6] || "") === kam) &&
+      (npp === "all" || String(row[4] || "") === npp) &&
+      (type === "all" || String(row[14] || "") === type)
+    );
+  }
+
+  function renderDetail() {
+    const tBody = document.querySelector("#detail-table tbody");
+    if (!tBody) return;
+    const source = window.DISPLAY_DETAIL_ROWS || [];
+    const filtered = getFilteredDetailRows();
+    const esc = (value) => String(value ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    renderDetailDeliveryTotals(source);
+    const withPosm = filtered.filter((row) => String(row[15] || "").trim().toLowerCase() === "new posm").length;
+    const withoutPosm = filtered.filter((row) => String(row[15] || "").trim().toLowerCase() === "not yet have posm").length;
+    document.getElementById("detail-total-count").textContent = filtered.length.toLocaleString();
+    document.getElementById("detail-with-posm-count").textContent = withPosm.toLocaleString();
+    document.getElementById("detail-without-posm-count").textContent = withoutPosm.toLocaleString();
+    const meta = window.DISPLAY_DETAIL_META || {};
+    const files = meta.files || {};
+    const count = source.length ? t("detailCount").replace("{n}", filtered.length.toLocaleString()).replace("{mix}", files.Mix || "—").replace("{bz}", files.BiteeZ || "—") : t("detailNoData");
+    document.getElementById("detail-row-count").textContent = count;
+    if (!filtered.length) {
+      tBody.innerHTML = `<tr><td colspan="16" class="detail-empty">${esc(source.length ? "—" : count)}</td></tr>`;
+      return;
+    }
+    tBody.innerHTML = filtered.map((row) => `<tr>${row.slice(0, 16).map((value) => `<td>${esc(value)}</td>`).join("")}</tr>`).join("");
+  }
+
+  function exportDetailExcel() {
+    const rows = getFilteredDetailRows();
+    const headers = [...document.querySelectorAll("#detail-table thead th")].map((th) => th.textContent.trim());
+    const esc = (value) => String(value ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    const filterLabels = ["detail-product-filter", "detail-area-filter", "detail-kam-filter", "detail-npp-filter", "detail-type-filter"];
+    const filterSummary = filterLabels.map((id) => {
+      const select = document.getElementById(id);
+      const label = select?.parentElement.querySelector("span")?.textContent.trim() || id;
+      return `${label}: ${select?.selectedOptions[0]?.textContent.trim() || "—"}`;
+    }).join(" · ");
+    const thead = `<thead><tr>${headers.map((value) => `<th>${esc(value)}</th>`).join("")}</tr></thead>`;
+    const tbody = `<tbody>${rows.map((row) => `<tr>${row.slice(0, 16).map((value) => `<td>${esc(value)}</td>`).join("")}</tr>`).join("")}</tbody>`;
+    const workbookHtml = `<!doctype html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"><style>
+      body{font-family:Calibri,Arial,sans-serif}h2{color:#1a4474}p{color:#52677d}table{border-collapse:collapse}th,td{border:1px solid #cbd5e1;padding:6px 8px;text-align:left;vertical-align:top;mso-number-format:"\\@"}th{background:#1a4474;color:#fff;font-weight:bold}
+    </style></head><body><h2>${esc(t("detailTableTitle"))}</h2><p>${esc(filterSummary)}</p><table>${thead}${tbody}</table></body></html>`;
+    const blob = new Blob(["\ufeff", workbookHtml], { type: "application/vnd.ms-excel;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = "Display_Detail.xls";
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  }
+
+  function renderDetailDeliveryTotals(filteredDetailRows) {
+    const deliveries = window.POSM_DELIVERY_TOTALS || [];
+    const area = document.getElementById("detail-area-filter")?.value || "all";
+    const kam = document.getElementById("detail-kam-filter")?.value || "all";
+    const npp = document.getElementById("detail-npp-filter")?.value || "all";
+    const hasDistributorScope = area !== "all" || kam !== "all" || npp !== "all";
+    const distributorKeys = hasDistributorScope
+      ? new Set((filteredDetailRows || []).filter((row) =>
+        (area === "all" || String(row[2] || "") === area) &&
+        (kam === "all" || String(row[6] || "") === kam) &&
+        (npp === "all" || String(row[4] || "") === npp)
+      ).map((row) => normalizeDistributorKey(row[4])).filter(Boolean))
+      : null;
+    const product = document.getElementById("detail-product-filter")?.value || "all";
+    const type = document.getElementById("detail-type-filter")?.value || "all";
+    const brands = product === "all" ? ["mix", "bz"] : [product.toLowerCase() === "biteez" ? "bz" : "mix"];
+    const sumType = (posmType) => {
+      if (type !== "all" && type.toLowerCase() !== posmType.toLowerCase()) return 0;
+      const fieldSuffix = `${posmType}Sent`;
+      return deliveries.reduce((total, item) => {
+        if (distributorKeys && !distributorKeys.has(normalizeDistributorKey(item.name))) return total;
+        return total + brands.reduce((brandTotal, brand) => brandTotal + Number(item[`${brand}${fieldSuffix}`] || 0), 0);
+      }, 0);
+    };
+    const values = {
+      "detail-hanger-sent": sumType("Hanger"),
+      "detail-frame-standee-sent": sumType("Frame") + sumType("Standee")
+    };
+    for (const [elementId, value] of Object.entries(values)) {
+      const element = document.getElementById(elementId);
+      if (element) element.textContent = value.toLocaleString();
+    }
+  }
+
   document.querySelectorAll(".lang-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       lang = btn.dataset.lang;
@@ -1045,8 +1386,14 @@
   document.getElementById("posm-area-filter").addEventListener("change", renderPosm);
   document.getElementById("posm-search").addEventListener("input", renderPosm);
   document.getElementById("posm-show-totals").addEventListener("change", renderPosm);
+  document.getElementById("posm-export-btn")?.addEventListener("click", exportPosmExcel);
   document.getElementById("plan-alert-only-over")?.addEventListener("change", renderPlanAlerts);
+  ["detail-product-filter", "detail-area-filter", "detail-kam-filter", "detail-npp-filter", "detail-type-filter"].forEach((id) => {
+    document.getElementById(id)?.addEventListener("change", renderDetail);
+  });
+  document.getElementById("detail-export-btn")?.addEventListener("click", exportDetailExcel);
   fillPosmAreaOptions();
+  fillDetailFilters();
 
   document.querySelectorAll(".region-tab").forEach((tab) => {
     tab.addEventListener("click", () => showRewardRegion(tab.dataset.region));
