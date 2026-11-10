@@ -513,7 +513,7 @@ window.DISPLAY_PLAN_VS_ACTUAL = {
     },
     {
       "hq": "South",
-      "area": "HLEC",
+      "area": "Central",
       "code": null,
       "name": "Phát Phước Đức",
       "key": "phatphuocuc",

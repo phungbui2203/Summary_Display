@@ -124,7 +124,7 @@ window.POSM_DELIVERY_TOTALS = [
   {
     "name": "NPP MINH TOÀN",
     "hq": "South",
-    "area": "Highland",
+    "area": "Central",
     "mixFrameSent": 0,
     "mixStandeeSent": 0,
     "mixHangerSent": 10,
@@ -179,7 +179,7 @@ window.POSM_DELIVERY_TOTALS = [
   {
     "name": "NPP PHÁT PHƯỚC ĐỨC",
     "hq": "South",
-    "area": "Highland",
+    "area": "Central",
     "mixFrameSent": 0,
     "mixStandeeSent": 0,
     "mixHangerSent": 5,
