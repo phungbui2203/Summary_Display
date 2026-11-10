@@ -588,7 +588,7 @@ window.DISPLAY_ALLOCATION_NPP = [
     "kind": "npp",
     "region": "south",
     "hq": "South",
-    "area": "Central",
+    "area": "HLEC",
     "cdm": "Vũ Ngọc Hải",
     "kam": "Hồ Văn Tiến",
     "code": null,
